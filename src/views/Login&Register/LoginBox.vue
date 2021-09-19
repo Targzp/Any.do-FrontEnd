@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-09-17 17:34:59
- * @LastEditTime: 2021-09-17 20:52:32
+ * @LastEditTime: 2021-09-19 20:12:26
  * @LastEditors: Please set LastEditors
  * @Description: 登录模块页面组件
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\Login&Register\LoginBox.vue
@@ -25,6 +25,7 @@
             </div>
             <el-form
                 class="loginBox__Input"
+                ref="loginForm"
                 :model="user"
                 :rules="rules">
                 <div v-if="loginModel">
@@ -56,34 +57,46 @@
                         />
                     </el-form-item>
                     <el-form-item prop="userCode">
-                        <el-row justify="space-between">
-                            <el-col :span="8">
-                                <el-input
-                                    class="loginBox__Input__code"
-                                    type="text"
-                                    v-model="user.userCode"
-                                    placeholder="请输入验证码"
-                                />
-                            </el-col>
-                            <el-col :span="6.5">
-                                <el-button class="loginBox__Input__requireButton">获取验证码</el-button>
-                            </el-col>
-                        </el-row>
+                        <el-input
+                            class="loginBox__Input__code"
+                            type="text"
+                            v-model="user.userCode"
+                            placeholder="请输入验证码"
+                        >
+                            <template #suffix>
+                                <div
+                                    class="loginBox__Input__requireButton"
+                                    @click="handleIsPhoneEmpty">
+                                    {{computeTime>0?`${computeTime}s`:'获取验证码'}}
+                                </div>
+                            </template>
+                        </el-input>
                     </el-form-item>
                 </div>
                 <el-form-item>
-                    <el-button class="loginBox__Input__loginButton" type="primary">登录</el-button>
+                    <el-button
+                        class="loginBox__Input__loginButton"
+                        type="primary"
+                        @click="handleLoginSubmit">登录</el-button>
                 </el-form-item>
                 <el-form-item class="loginBox__Input__register" @click="$emit('toChange')">
                     免费注册
                 </el-form-item>
             </el-form>
         </div>
+        <Vcode :show="isShow" @success="handleSendCode" @close="onClose" />
     </div>
 </template>
 
 <script setup>
-import { ref, reactive, toRefs } from 'vue'
+import { ElMessage } from 'element-plus'
+import { ref, reactive } from 'vue'
+import { useRouter } from 'vue-router'
+import request from '../../api/index'
+import Vcode from 'vue3-puzzle-vcode'
+
+const router = useRouter() 
+
 /**
  * @description: 登录模块相关逻辑
  */
@@ -92,6 +105,8 @@ const useLoginEffect = () => {
     const user = reactive({})
 
     const loginModel = ref(true)
+
+    const loginForm = ref(null)
 
     const rules = {
         userName: [
@@ -111,8 +126,9 @@ const useLoginEffect = () => {
         userPhone: [
             {
                 required: true,
-                message: '请输入手机号',
-                trigger: 'blur'
+                pattern: /^(13[0-9]|14[5|7]|15[0|1|2|3|4|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\d{8}$/,
+                message: '请输入正确格式的手机号码',
+                trigger: 'change'
             }
         ],
         userCode:[
@@ -124,6 +140,47 @@ const useLoginEffect = () => {
         ]
     }
 
+        // 获取验证码倒计时
+    const computeTime = ref(0)
+
+    // 拼图验证模态框的显示
+    const isShow = ref(false)
+
+    // 关闭拼图验证模态框
+    const onClose = () => {
+      isShow.value = false
+    }
+
+    // 判断手机号是否已填
+    const handleIsPhoneEmpty = () => {
+        if (computeTime > 0) {
+            return 
+        }
+        if (!user.userPhone) {
+            ElMessage.warning('请输入手机号')
+            return
+        }
+        if (!computeTime.value) {
+            isShow.value = true
+        }
+    }
+
+    // 验证成功，需要手动关闭模态框并获取验证码
+    const handleSendCode = async () => {
+        onClose()
+        computeTime.value = 60
+        let intervalId = setInterval(() => {
+            computeTime.value--
+            if (computeTime.value === 0) {
+                clearInterval(intervalId)
+            }
+        }, 1000);
+        
+        const params = { userPhone: user.userPhone }
+
+        await request.sendCode(params)
+    }
+
     // 控制密码/短信登录模式切换
     const handleChangeModel = (tip) => {
         if (tip === 'password') {
@@ -133,11 +190,36 @@ const useLoginEffect = () => {
         }
     }
 
+    // 用户登录数据提交
+    const handleLoginSubmit = () => {
+        loginForm.value.validate(async (valid) => {
+            if (valid) {
+                try {
+                    const params = { ...user }
+                    const res = await request.login(params)
+                    if (res) {
+                        ElMessage.success('登录成功')
+                        router.push({name: 'Home'})
+                    }
+                } catch (error) {
+                    console.error(error)
+                }
+            }
+        })
+    }
+
     return {
         loginModel,
         user,
         rules,
-        handleChangeModel
+        loginForm,
+        computeTime,
+        isShow,
+        onClose,
+        handleIsPhoneEmpty,
+        handleSendCode,
+        handleChangeModel,
+        handleLoginSubmit
     }
 }
 
@@ -147,7 +229,19 @@ const props = defineProps({
 })
 
 // 逻辑调度
-const { loginModel, user, rules, handleChangeModel } = useLoginEffect()
+const {
+    loginModel,
+    user,
+    rules,
+    loginForm,
+    computeTime,
+    isShow,
+    onClose,
+    handleIsPhoneEmpty,
+    handleSendCode,
+    handleChangeModel,
+    handleLoginSubmit
+} = useLoginEffect()
 </script>
 
 <style lang="scss">
@@ -176,6 +270,7 @@ const { loginModel, user, rules, handleChangeModel } = useLoginEffect()
     background: $base-bgColor;
     box-shadow: 0 0 .08rem .02rem #eee;
     border-radius: .1rem;
+    transition: all 0.5s ease;
     &__modelText{
         font-size: .18rem;
         font-weight: bold;
@@ -192,13 +287,16 @@ const { loginModel, user, rules, handleChangeModel } = useLoginEffect()
         }
     }
     &__Input{
-        &__code{
-            width: 2.3rem;
+        &__requireButton{
+            cursor: pointer;
         }
         &__loginButton{
             width: 100%;
         }
         &__register{
+            width: .8rem;
+            margin-left: auto;
+            margin-right: 0;
             text-align: right;
             font-size: .14rem;
             color: $tips-fontColor;

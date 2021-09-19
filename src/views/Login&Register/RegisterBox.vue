@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-09-17 19:50:03
- * @LastEditTime: 2021-09-17 20:55:54
+ * @LastEditTime: 2021-09-19 20:19:51
  * @LastEditors: Please set LastEditors
  * @Description: 注册模块页面组件
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\Login&Register\RegisterBox.vue
@@ -13,6 +13,7 @@
         </div>
         <el-form
             class="registerBox__Input"
+            ref="registerForm"
             :model="user"
             :rules="rules">
             <el-form-item prop="userName">
@@ -41,39 +42,51 @@
                 />
             </el-form-item>
             <el-form-item prop="userCode">
-                <el-row justify="space-between">
-                    <el-col :span="8">
-                        <el-input
-                            class="registerBox__Input__code"
-                            type="text"
-                            v-model="user.userCode"
-                            placeholder="请输入验证码"
-                        />
-                    </el-col>
-                    <el-col :span="6.5">
-                        <el-button class="registerBox__Input__requireButton">获取验证码</el-button>
-                    </el-col>
-                </el-row>
+                <el-input
+                    class="registerBox__Input__code"
+                    type="text"
+                    v-model="user.userCode"
+                    placeholder="请输入验证码"
+                >
+                    <template #suffix>
+                        <div
+                            class="registerBox__Input__requireButton"
+                            @click="handleIsPhoneEmpty">
+                            {{computeTime>0?`${computeTime}s`:'获取验证码'}}
+                        </div>
+                    </template>
+                </el-input>
             </el-form-item>
             <el-form-item>
-                <el-button class="registerBox__Input__registerButton" type="primary">注册</el-button>
+                <el-button class="registerBox__Input__registerButton" type="primary" @click="handleRegisterSubmit">注册</el-button>
             </el-form-item>
             <el-form-item class="registerBox__Input__login" @click="$emit('toChange')">
                 去登陆 >>
             </el-form-item>
         </el-form>
+        <Vcode :show="isShow" @success="handleSendCode" @close="onClose" />
     </div>
 </template>
 
 <script setup>
-import { reactive } from 'vue'
+import { ref, reactive } from 'vue'
+import { useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
+import Vcode from "vue3-puzzle-vcode";
+import request from '../../api/index'
+
+const router = useRouter() 
 /**
- * @description: 登录模块相关逻辑
+ * @description: 注册模块相关逻辑
  */
 const useRegisterEffect = () => {
-    // 用户登录数据
+    // 用户注册数据
     const user = reactive({})
 
+    // 注册表单元素对象
+    const registerForm = ref(null)
+
+    // 注册表单校验规则
     const rules = {
         userName: [
             {
@@ -85,15 +98,17 @@ const useRegisterEffect = () => {
         userPwd: [
             {
                 required: true,
-                message: '请输入密码',
-                trigger: 'blur'
+                pattern: /^[a-zA-Z]\w{5,17}$/,
+                message: '字母开头，长度6~18，包含字母、数字和下划线',
+                trigger: 'change'
             }
         ],
         userPhone: [
             {
                 required: true,
-                message: '请输入手机号',
-                trigger: 'blur'
+                pattern: /^(13[0-9]|14[5|7]|15[0|1|2|3|4|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\d{8}$/,
+                message: '请输入正确格式的手机号码',
+                trigger: 'change'
             }
         ],
         userCode:[
@@ -105,9 +120,72 @@ const useRegisterEffect = () => {
         ]
     }
 
+    // 获取验证码倒计时
+    const computeTime = ref(0)
+
+    // 拼图验证模态框的显示
+    const isShow = ref(false)
+
+    // 关闭拼图验证模态框
+    const onClose = () => {
+      isShow.value = false
+    }
+
+    // 判断手机号是否已填
+    const handleIsPhoneEmpty = () => {
+        if (!user.userPhone) {
+            ElMessage.warning('请输入手机号')
+            return
+        }
+        if (!computeTime.value) {
+            isShow.value = true
+        }
+    }
+
+    // 验证成功，需要手动关闭模态框并获取验证码
+    const handleSendCode = async () => {
+        onClose()
+        computeTime.value = 60
+        let intervalId = setInterval(() => {
+            computeTime.value--
+            if (computeTime.value === 0) {
+                clearInterval(intervalId)
+            }
+        }, 1000);
+        
+        const params = { userPhone: user.userPhone }
+
+        await request.sendCode(params)
+    }
+
+    // 用户注册数据提交
+    const handleRegisterSubmit =  () => {
+        registerForm.value.validate(async (valid) => {
+            if (valid) {
+                try {
+                    const params =  { ...user }
+                    const res = await request.register(params)
+                    if (res) {
+                        ElMessage.success('注册成功')
+                        emit('toChange')
+                    }
+                } catch (error) {
+                    console.error(error)
+                }
+            }
+        })
+    }
+
     return {
         user,
-        rules
+        rules,
+        registerForm,
+        computeTime,
+        isShow,
+        onClose,
+        handleIsPhoneEmpty,
+        handleSendCode,
+        handleRegisterSubmit
     }
 }
 
@@ -115,9 +193,21 @@ const useRegisterEffect = () => {
 const props = defineProps({
   model: Boolean
 })
+const emit = defineEmits(['toChange'])
 
-// 逻辑调度
-const { user, rules } = useRegisterEffect()
+// 逻辑调度区域
+// 用户注册相关逻辑
+const { 
+    user,
+    rules,
+    registerForm,
+    computeTime,
+    isShow,
+    onClose,
+    handleIsPhoneEmpty,
+    handleSendCode,
+    handleRegisterSubmit
+} = useRegisterEffect()
 </script>
 
 <style lang="scss">
@@ -129,6 +219,7 @@ const { user, rules } = useRegisterEffect()
     background: $base-bgColor;
     box-shadow: 0 0 .08rem .02rem #eee;
     border-radius: .1rem;
+    transition: all 0.5s ease;
     &__modelText{
         font-size: .18rem;
         font-weight: bold;
@@ -145,13 +236,16 @@ const { user, rules } = useRegisterEffect()
         }
     }
     &__Input{
-        &__code{
-            width: 2.3rem;
+        &__requireButton{
+            cursor: pointer;
         }
         &__registerButton{
             width: 100%;
         }
         &__login{
+            width: .8rem;
+            margin-left: auto;
+            margin-right: 0;
             text-align: right;
             font-size: .14rem;
             color: $tips-fontColor;

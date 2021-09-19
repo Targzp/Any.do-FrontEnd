@@ -1,7 +1,16 @@
-html {
+html{
     font-size: 100px;
 }
 
 body {
     margin: 0px;
+}
+
+.el-message{
+    font-size: 16px;
+}
+
+* {
+    // 去除点击时的蓝色背景
+    -webkit-tap-highlight-color: transparent;
 }

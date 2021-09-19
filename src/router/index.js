@@ -1,7 +1,7 @@
 /*
  * @Author: 胡晨明
  * @Date: 2021-08-15 21:12:02
- * @LastEditTime: 2021-09-17 17:33:36
+ * @LastEditTime: 2021-09-18 17:22:43
  * @LastEditors: Please set LastEditors
  * @Description: 前端路由配置
  * @FilePath: \bloge:\Vue_store\manager-fe\src\router\index.js
@@ -47,7 +47,6 @@ import {
   // 导航守卫
   router.beforeEach((to, from, next) => {
     if (router.hasRoute(to.name)) {
-      document.title = to.meta.title
       next()
     } else {
       next('/404')
