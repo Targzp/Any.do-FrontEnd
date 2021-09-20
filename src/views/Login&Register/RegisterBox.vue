@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-09-17 19:50:03
- * @LastEditTime: 2021-09-19 20:19:51
+ * @LastEditTime: 2021-09-20 22:05:20
  * @LastEditors: Please set LastEditors
  * @Description: 注册模块页面组件
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\Login&Register\RegisterBox.vue
@@ -32,13 +32,13 @@
                     placeholder="请输入密码"
                 />
             </el-form-item>
-            <el-form-item prop="userPhone">
+            <el-form-item prop="userMail">
                 <el-input
-                    class="registerBox__Input__phoneNumber"
+                    class="registerBox__Input__MailNumber"
                     type="text"
-                    prefix-icon="el-icon-mobile-phone"
-                    v-model="user.userPhone"
-                    placeholder="请输入手机号"
+                    prefix-icon="el-icon-message"
+                    v-model="user.userMail"
+                    placeholder="请输入邮箱"
                 />
             </el-form-item>
             <el-form-item prop="userCode">
@@ -51,7 +51,7 @@
                     <template #suffix>
                         <div
                             class="registerBox__Input__requireButton"
-                            @click="handleIsPhoneEmpty">
+                            @click="handleIsMailEmpty">
                             {{computeTime>0?`${computeTime}s`:'获取验证码'}}
                         </div>
                     </template>
@@ -103,11 +103,11 @@ const useRegisterEffect = () => {
                 trigger: 'change'
             }
         ],
-        userPhone: [
+        userMail: [
             {
                 required: true,
-                pattern: /^(13[0-9]|14[5|7]|15[0|1|2|3|4|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\d{8}$/,
-                message: '请输入正确格式的手机号码',
+                pattern: /^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/,
+                message: '请输入正确格式的邮箱',
                 trigger: 'change'
             }
         ],
@@ -132,9 +132,9 @@ const useRegisterEffect = () => {
     }
 
     // 判断手机号是否已填
-    const handleIsPhoneEmpty = () => {
-        if (!user.userPhone) {
-            ElMessage.warning('请输入手机号')
+    const handleIsMailEmpty = () => {
+        if (!user.userMail) {
+            ElMessage.warning('请输入邮箱')
             return
         }
         if (!computeTime.value) {
@@ -151,11 +151,17 @@ const useRegisterEffect = () => {
             if (computeTime.value === 0) {
                 clearInterval(intervalId)
             }
-        }, 1000);
+        }, 1000)
         
-        const params = { userPhone: user.userPhone }
-
-        await request.sendCode(params)
+        const params = { userMail: user.userMail }
+        try {
+            const res = await request.sendcode(params)
+            if (res) {
+                ElMessage.success('发送成功')
+            }
+        } catch (error) {
+            console.error(error)
+        }
     }
 
     // 用户注册数据提交
@@ -183,7 +189,7 @@ const useRegisterEffect = () => {
         computeTime,
         isShow,
         onClose,
-        handleIsPhoneEmpty,
+        handleIsMailEmpty,
         handleSendCode,
         handleRegisterSubmit
     }
@@ -204,7 +210,7 @@ const {
     computeTime,
     isShow,
     onClose,
-    handleIsPhoneEmpty,
+    handleIsMailEmpty,
     handleSendCode,
     handleRegisterSubmit
 } = useRegisterEffect()
@@ -228,7 +234,7 @@ const {
             margin-right: .12rem;
             cursor: pointer;
         }
-        &__phone{
+        &__Mail{
             cursor: pointer;
         }
         &__tips{

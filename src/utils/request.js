@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-09-18 14:26:38
- * @LastEditTime: 2021-09-19 19:48:40
+ * @LastEditTime: 2021-09-20 17:38:52
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\utils\request.js
@@ -12,7 +12,7 @@ import {
     ElMessage
 } from 'element-plus'
 import router from '../router/index'
-import storage from '../utils/storage'
+import storage from './storage'
 const TOKEN_INVALID = 'Token认证失败，请重新登录'
 const NETWORK_ERROR = '网络请求异常，请稍后重试'
 
@@ -24,11 +24,11 @@ const service = axios.create({
 
 // 请求拦截
 service.interceptors.request.use((req) => {
-    /* const headers = req.headers
+    const headers = req.headers
     const token = storage?.getItem('userInfo')?.token || ''
     if (!headers.Authorization) {
         headers.Authorization = 'Bearer ' + token
-    } */
+    }
     return req
 })
 

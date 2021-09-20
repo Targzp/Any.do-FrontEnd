@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-09-17 17:34:59
- * @LastEditTime: 2021-09-19 20:12:26
+ * @LastEditTime: 2021-09-20 23:18:22
  * @LastEditors: Please set LastEditors
  * @Description: 登录模块页面组件
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\Login&Register\LoginBox.vue
@@ -19,9 +19,9 @@
                     @click="handleChangeModel('password')"
                 >密码登录</span>
                 <span
-                    :class="{loginBox__modelText__phone:true, loginBox__modelText__tips: !loginModel}"
+                    :class="{loginBox__modelText__Mail:true, loginBox__modelText__tips: !loginModel}"
                     @click="handleChangeModel('message')"
-                >短信登录</span>
+                >邮箱登录</span>
             </div>
             <el-form
                 class="loginBox__Input"
@@ -47,13 +47,13 @@
                     </el-form-item>
                 </div>
                 <div v-else>
-                    <el-form-item prop="userPhone">
+                    <el-form-item prop="userMail">
                         <el-input
-                            class="loginBox__Input__phoneNumber"
+                            class="loginBox__Input__MailNumber"
                             type="text"
-                            prefix-icon="el-icon-mobile-phone"
-                            v-model="user.userPhone"
-                            placeholder="请输入手机号"
+                            prefix-icon="el-icon-message"
+                            v-model="user.userMail"
+                            placeholder="请输入邮箱"
                         />
                     </el-form-item>
                     <el-form-item prop="userCode">
@@ -66,7 +66,7 @@
                             <template #suffix>
                                 <div
                                     class="loginBox__Input__requireButton"
-                                    @click="handleIsPhoneEmpty">
+                                    @click="handleIsMailEmpty">
                                     {{computeTime>0?`${computeTime}s`:'获取验证码'}}
                                 </div>
                             </template>
@@ -92,10 +92,12 @@
 import { ElMessage } from 'element-plus'
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
+import { useStore } from 'vuex'
 import request from '../../api/index'
 import Vcode from 'vue3-puzzle-vcode'
 
 const router = useRouter() 
+const store = useStore()
 
 /**
  * @description: 登录模块相关逻辑
@@ -123,11 +125,11 @@ const useLoginEffect = () => {
                 trigger: 'blur'
             }
         ],
-        userPhone: [
+        userMail: [
             {
                 required: true,
-                pattern: /^(13[0-9]|14[5|7]|15[0|1|2|3|4|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\d{8}$/,
-                message: '请输入正确格式的手机号码',
+                pattern: /^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/,
+                message: '请输入正确格式的邮箱',
                 trigger: 'change'
             }
         ],
@@ -152,12 +154,12 @@ const useLoginEffect = () => {
     }
 
     // 判断手机号是否已填
-    const handleIsPhoneEmpty = () => {
+    const handleIsMailEmpty = () => {
         if (computeTime > 0) {
             return 
         }
-        if (!user.userPhone) {
-            ElMessage.warning('请输入手机号')
+        if (!user.userMail) {
+            ElMessage.warning('请输入邮箱')
             return
         }
         if (!computeTime.value) {
@@ -176,9 +178,15 @@ const useLoginEffect = () => {
             }
         }, 1000);
         
-        const params = { userPhone: user.userPhone }
-
-        await request.sendCode(params)
+        const params = { userMail: user.userMail }
+        try {
+            const res = await request.sendcode(params)
+            if (res) {
+                ElMessage.success('发送成功')
+            }
+        } catch (error) {
+            console.error(error)
+        }
     }
 
     // 控制密码/短信登录模式切换
@@ -199,6 +207,7 @@ const useLoginEffect = () => {
                     const res = await request.login(params)
                     if (res) {
                         ElMessage.success('登录成功')
+                        store.commit('saveUserInfo', res)
                         router.push({name: 'Home'})
                     }
                 } catch (error) {
@@ -216,7 +225,7 @@ const useLoginEffect = () => {
         computeTime,
         isShow,
         onClose,
-        handleIsPhoneEmpty,
+        handleIsMailEmpty,
         handleSendCode,
         handleChangeModel,
         handleLoginSubmit
@@ -237,7 +246,7 @@ const {
     computeTime,
     isShow,
     onClose,
-    handleIsPhoneEmpty,
+    handleIsMailEmpty,
     handleSendCode,
     handleChangeModel,
     handleLoginSubmit
@@ -279,7 +288,7 @@ const {
             margin-right: .12rem;
             cursor: pointer;
         }
-        &__phone{
+        &__Mail{
             cursor: pointer;
         }
         &__tips{

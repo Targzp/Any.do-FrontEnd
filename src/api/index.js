@@ -1,9 +1,9 @@
 /*
- * @Author: your name
+ * @Author: 胡晨明
  * @Date: 2021-09-18 14:25:16
- * @LastEditTime: 2021-09-18 15:19:52
+ * @LastEditTime: 2021-09-20 23:19:36
  * @LastEditors: Please set LastEditors
- * @Description: In User Settings Edit
+ * @Description: 接口汇总
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\api\index.js
  */
 import request from '../utils/request'
@@ -13,7 +13,7 @@ export default {
             method: 'post',
             url: '/users/register',
             data: params,
-            mock: true
+            mock: false
         })
     },
     login(params) {
@@ -21,15 +21,15 @@ export default {
             method: 'post',
             url: '/users/login',
             data: params,
-            mock: true
+            mock: false
         })
     },
-    sendCode(params) {
+    sendcode(params) {
         return request({
             method: 'post',
-            url: '/users/sendCode',
+            url: '/users/sendcode',
             data: params,
-            mock: true
+            mock: false
         })
     }
 }
