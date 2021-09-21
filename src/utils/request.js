@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-09-18 14:26:38
- * @LastEditTime: 2021-09-20 17:38:52
+ * @LastEditTime: 2021-09-21 17:46:24
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\utils\request.js
@@ -25,9 +25,14 @@ const service = axios.create({
 // 请求拦截
 service.interceptors.request.use((req) => {
     const headers = req.headers
-    const token = storage?.getItem('userInfo')?.token || ''
-    if (!headers.Authorization) {
-        headers.Authorization = 'Bearer ' + token
+    let token = ''
+    try {
+        token = storage.getItem('userInfo').token
+    } catch (error) {
+        console.warn('Not exist token')
+    }
+    if (!headers.authorization) {
+        headers.authorization = 'Bearer ' + token
     }
     return req
 })

@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-09-17 17:34:59
- * @LastEditTime: 2021-09-20 23:18:22
+ * @LastEditTime: 2021-09-21 23:20:17
  * @LastEditors: Please set LastEditors
  * @Description: 登录模块页面组件
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\Login&Register\LoginBox.vue
@@ -106,9 +106,14 @@ const useLoginEffect = () => {
     // 用户登录数据
     const user = reactive({})
 
+    // 登录模式
     const loginModel = ref(true)
 
+    // 登录表单对象
     const loginForm = ref(null)
+
+    // 输入密码计数器
+    let pwdFrequency = 0
 
     const rules = {
         userName: [
@@ -170,22 +175,24 @@ const useLoginEffect = () => {
     // 验证成功，需要手动关闭模态框并获取验证码
     const handleSendCode = async () => {
         onClose()
-        computeTime.value = 60
-        let intervalId = setInterval(() => {
-            computeTime.value--
-            if (computeTime.value === 0) {
-                clearInterval(intervalId)
+        if (!loginModel.value) {
+            computeTime.value = 60
+            let intervalId = setInterval(() => {
+                computeTime.value--
+                if (computeTime.value === 0) {
+                    clearInterval(intervalId)
+                }
+            }, 1000);
+            
+            const params = { userMail: user.userMail }
+            try {
+                const res = await request.sendcode(params)
+                if (res) {
+                    ElMessage.success('发送成功')
+                }
+            } catch (error) {
+                console.error(error)
             }
-        }, 1000);
-        
-        const params = { userMail: user.userMail }
-        try {
-            const res = await request.sendcode(params)
-            if (res) {
-                ElMessage.success('发送成功')
-            }
-        } catch (error) {
-            console.error(error)
         }
     }
 
@@ -211,7 +218,11 @@ const useLoginEffect = () => {
                         router.push({name: 'Home'})
                     }
                 } catch (error) {
-                    console.error(error)
+                    // 当账户或密码输错超过三次则需进行人机验证
+                    pwdFrequency++
+                    if (pwdFrequency > 3) {
+                        isShow.value = true
+                    }
                 }
             }
         })
