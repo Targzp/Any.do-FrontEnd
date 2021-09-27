@@ -27,6 +27,7 @@ const EnvConfig = {
 }
 export default {
  env: env,
+ port: 3000,
  namespace: 'anydo',
  ...EnvConfig[env]
 }

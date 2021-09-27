@@ -44,26 +44,6 @@ const modelChange = ref(true)
         width: 3rem;
     }
 }
-/* 实现波浪效果 */
-.custom-shape-divider-top-1631783178 {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    overflow: hidden;
-    line-height: 0;
-}
-
-.custom-shape-divider-top-1631783178 svg {
-    position: relative;
-    display: block;
-    width: calc(105% + 1.3px);
-    height: 92px;
-}
-
-.custom-shape-divider-top-1631783178 .shape-fill {
-    fill: #FFFFFF;
-}
 
 .model-enter-active,
 .model-leave-active {

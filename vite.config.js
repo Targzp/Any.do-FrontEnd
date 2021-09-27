@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-09-15 23:08:44
- * @LastEditTime: 2021-09-21 11:37:44
+ * @LastEditTime: 2021-09-26 19:54:02
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\vite.config.js
@@ -20,5 +20,7 @@ export default defineConfig({
       }
     }
   },
-  plugins: [vue()],
+  plugins: [
+    vue()
+  ],
 })

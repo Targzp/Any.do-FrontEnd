@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-09-18 14:26:38
- * @LastEditTime: 2021-09-21 17:46:24
+ * @LastEditTime: 2021-09-26 18:38:13
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\utils\request.js
@@ -49,8 +49,9 @@ service.interceptors.response.use((res) => {
     } else if (code === 50001) {
         ElMessage.error(TOKEN_INVALID)
         setTimeout(() => {
-        router.push('/login')
-        }, 1500)
+            storage.clearAll()
+            router.push('/login')
+        }, 1000)
         return Promise.reject(TOKEN_INVALID)
     } else {
         ElMessage.error(msg || NETWORK_ERROR)

@@ -1,7 +1,7 @@
 /*
  * @Author: 胡晨明
  * @Date: 2021-08-15 21:12:02
- * @LastEditTime: 2021-09-21 17:09:53
+ * @LastEditTime: 2021-09-24 11:35:20
  * @LastEditors: Please set LastEditors
  * @Description: 前端路由配置
  * @FilePath: \bloge:\Vue_store\manager-fe\src\router\index.js
@@ -33,6 +33,43 @@ const routes = [{
       const userInfo = storage.getItem('userInfo')
       userInfo ? next({ name: 'Home' }) : next()
     }
+  },
+  {
+    name: 'Setting',
+    path: '/setting',
+    meta: {
+      title: '登录'
+    },
+    component: () => import('../views/Setting/Setting.vue'),
+    redirect: {
+      name: 'Profile'
+    },
+    children: [
+      {
+        name: 'Profile',
+        path: 'profile',
+        meta: {
+          title: '个人信息'
+        },
+        component: () => import('../views/Setting/Profile.vue'),
+      },
+      {
+        name: 'UpdatePassword',
+        path: 'updatepassword',
+        meta: {
+          title: '更改密码'
+        },
+        component: () => import('../views/Setting/UpdatePassword.vue'),
+      },
+      {
+        name: 'BindMail',
+        path: 'bindmail',
+        meta: {
+          title: '绑定邮箱'
+        },
+        component: () => import('../views/Setting/BindMail.vue'),
+      }
+    ]
   },
   {
     name: '404',
