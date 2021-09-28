@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-09-22 20:53:41
- * @LastEditTime: 2021-09-27 23:58:11
+ * @LastEditTime: 2021-09-28 20:19:07
  * @LastEditors: Please set LastEditors
  * @Description: 设置基本账户信息界面组件
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\Setting\Profile.vue
@@ -12,6 +12,7 @@
         <el-form
             :model="user"
             ref="userForm"
+            :rules="rules"
             label-width="100px">
             <div class="profile__avatar">
                 <el-form-item label="头像：">
@@ -27,7 +28,7 @@
                     </el-upload>
                 </el-form-item>
             </div>
-            <el-form-item label="用户名：" prop="userName" :error="errorTips" required>
+            <el-form-item label="用户名：" prop="userName">
                 <el-input v-model="user.userName"></el-input>
             </el-form-item>
             <el-form-item label="性别：" prop="userSex">
@@ -116,14 +117,37 @@ const { userAvatar } = toRefs(store.state.userInfo)
 // 个人信息表单对象
 const userForm = ref(null)
 
+// 个人信息表单校验
+const rules = {
+    userName: [
+        {
+            required: true,
+            message: '请输入用户名',
+            trigger: 'blur'
+        },
+        {
+            /* 异步校验用户名是否重名，并使用防抖函数防止请求过多消耗性能 */
+            validator: debounce(async (rule, value, callback) => {
+                try {
+                    let res = await request.checkUserName({ userName: value })
+                    if (res) {
+                        callback(new Error('用户名已存在'))
+                    } else {
+                        callback()
+                    }
+                } catch (error) {
+                    console.log(`${error}`)
+                }
+            }, 500)
+        }
+    ]
+}
+
 // 裁剪图片
 const pic = ref('')
 
 // 裁剪框状态
 const trigger = ref(false)
-
-// 用户名重名提示信息
-const errorTips = ref('')
 
 // 上传之前钩子函数
 const beforeAvatarUpload = (file) => {
@@ -194,20 +218,6 @@ const handlePostUserProfile = () => {
         }
     })
 }
-
-// 监听用户名变化，查询是否重名
-watch(() => user.userName, debounce(async ()=>{
-    try {
-        let res = await request.checkUserName({ userName: user.userName })
-        if (res) {
-            errorTips.value = '用户名已存在'
-        } else {
-            errorTips.value = ''
-        }
-    } catch (error) {
-        console.log(`${error}`)
-    }
-}, 500))
 
 // 获取用户个人信息
 ;(async () => {
