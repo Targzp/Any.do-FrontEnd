@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-09-22 20:53:41
- * @LastEditTime: 2021-09-28 20:19:07
+ * @LastEditTime: 2021-09-29 00:48:44
  * @LastEditors: Please set LastEditors
  * @Description: 设置基本账户信息界面组件
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\Setting\Profile.vue
@@ -109,7 +109,6 @@ const store = useStore()
 
 // 用户相关数据
 const user = reactive({})
-Object.assign(user, store.state.userInfo)
 
 // 图片路径
 const { userAvatar } = toRefs(store.state.userInfo)
@@ -199,7 +198,7 @@ const postImage = async () => {
 const handlePostUserProfile = () => {
     userForm.value.validate((valid) => {
         if (valid) {
-            ElMessageBox.confirm('你确定这么做吗？小猪猪', '确认框', {
+            ElMessageBox.confirm('请确认是否提交', '确认框', {
                 cancelButtonText: '取消',
                 confirmButtonText: '确认',
                 type: 'warning',
@@ -210,6 +209,7 @@ const handlePostUserProfile = () => {
                 let res = await request.postProfile(params)
                 if (res) {
                     ElMessage.success('修改成功')
+                    store.commit('setUserProfile', res)
                 }
             })
             .catch(() => {
@@ -225,7 +225,7 @@ const handlePostUserProfile = () => {
         let res = await request.getProfile()
         if (res) {
             store.commit('setUserProfile', res)
-            Object.assign(user, res)
+            Object.assign(user, store.state.userInfo)
         }
     } catch (error) {
         console.log(`${error}`)

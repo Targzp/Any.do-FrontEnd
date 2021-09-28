@@ -1,7 +1,7 @@
 /*
  * @Author: 胡晨明
  * @Date: 2021-09-18 14:25:16
- * @LastEditTime: 2021-09-24 00:03:29
+ * @LastEditTime: 2021-09-28 23:27:38
  * @LastEditors: Please set LastEditors
  * @Description: 接口汇总
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\api\index.js
@@ -71,7 +71,7 @@ export default {
             method: 'post',
             url: '/users/userprofile',
             data: params,
-            mock: true
+            mock: false
         })
     }
 }
