@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-09-22 20:53:41
- * @LastEditTime: 2021-09-29 00:48:44
+ * @LastEditTime: 2021-09-30 23:34:59
  * @LastEditors: Please set LastEditors
  * @Description: 设置基本账户信息界面组件
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\Setting\Profile.vue
@@ -46,7 +46,7 @@
             </el-form-item>
             <el-form-item label="密码：">
                 已设置
-                <el-link type="primary" :underline="false">更改密码</el-link>
+                <el-link type="primary" :underline="false" @click="router.push('/setting/updatepassword')">更改密码</el-link>
             </el-form-item>
             <el-form-item label="电子邮箱：">
                 {{user.userMail}}
@@ -97,8 +97,9 @@
 </template>
 
 <script setup>
-import { ref, reactive, toRefs, onMounted, watch } from 'vue'
+import { ref, reactive, toRefs } from 'vue'
 import { useStore } from 'vuex'
+import { useRouter } from 'vue-router'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import VuePictureCropper, { cropper } from 'vue-picture-cropper/dist/esm'
 import request from '../../api/index'
@@ -106,6 +107,9 @@ import debounce from '../../utils/debounce'
 
 // 状态管理仓库
 const store = useStore()
+
+// 路由
+const router = useRouter()
 
 // 用户相关数据
 const user = reactive({})

@@ -1,7 +1,7 @@
 /*
  * @Author: 胡晨明
  * @Date: 2021-08-15 21:12:02
- * @LastEditTime: 2021-09-24 11:35:20
+ * @LastEditTime: 2021-09-30 00:27:29
  * @LastEditors: Please set LastEditors
  * @Description: 前端路由配置
  * @FilePath: \bloge:\Vue_store\manager-fe\src\router\index.js
@@ -38,7 +38,7 @@ const routes = [{
     name: 'Setting',
     path: '/setting',
     meta: {
-      title: '登录'
+      title: '设置'
     },
     component: () => import('../views/Setting/Setting.vue'),
     redirect: {
