@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-09-17 19:50:03
- * @LastEditTime: 2021-09-20 22:05:20
+ * @LastEditTime: 2021-10-01 23:46:15
  * @LastEditors: Please set LastEditors
  * @Description: 注册模块页面组件
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\Login&Register\RegisterBox.vue
@@ -68,58 +68,9 @@
     </div>
 </template>
 
-<script setup>
-import { ref, reactive } from 'vue'
-import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
-import Vcode from "vue3-puzzle-vcode";
-import request from '../../api/index'
-
-const router = useRouter() 
-/**
- * @description: 注册模块相关逻辑
- */
-const useRegisterEffect = () => {
-    // 用户注册数据
-    const user = reactive({})
-
-    // 注册表单元素对象
-    const registerForm = ref(null)
-
-    // 注册表单校验规则
-    const rules = {
-        userName: [
-            {
-                required: true,
-                message: '请输入用户名',
-                trigger: 'blur'
-            }
-        ],
-        userPwd: [
-            {
-                required: true,
-                pattern: /^[a-zA-Z]\w{5,17}$/,
-                message: '字母开头，长度6~18，包含字母、数字和下划线',
-                trigger: 'change'
-            }
-        ],
-        userMail: [
-            {
-                required: true,
-                pattern: /^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/,
-                message: '请输入正确格式的邮箱',
-                trigger: 'change'
-            }
-        ],
-        userCode:[
-            {
-                required: true,
-                message: '请输入验证码',
-                trigger: 'blur'
-            }
-        ]
-    }
-
+<script>
+// 发送验证码逻辑复用点
+export const useSendCodeEffect = (user) => {
     // 获取验证码倒计时
     const computeTime = ref(0)
 
@@ -128,10 +79,10 @@ const useRegisterEffect = () => {
 
     // 关闭拼图验证模态框
     const onClose = () => {
-      isShow.value = false
+        isShow.value = false
     }
 
-    // 判断手机号是否已填
+    // 判断邮箱是否已填
     const handleIsMailEmpty = () => {
         if (!user.userMail) {
             ElMessage.warning('请输入邮箱')
@@ -164,35 +115,82 @@ const useRegisterEffect = () => {
         }
     }
 
-    // 用户注册数据提交
-    const handleRegisterSubmit =  () => {
-        registerForm.value.validate(async (valid) => {
-            if (valid) {
-                try {
-                    const params =  { ...user }
-                    const res = await request.register(params)
-                    if (res) {
-                        ElMessage.success('注册成功')
-                        emit('toChange')
-                    }
-                } catch (error) {
-                    console.error(error)
-                }
-            }
-        })
-    }
-
     return {
-        user,
-        rules,
-        registerForm,
         computeTime,
         isShow,
         onClose,
         handleIsMailEmpty,
-        handleSendCode,
-        handleRegisterSubmit
+        handleSendCode
     }
+}
+</script>
+
+
+<script setup>
+import { ref, reactive } from 'vue'
+import { useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
+import Vcode from "vue3-puzzle-vcode";
+import request from '../../api/index'
+
+const router = useRouter() 
+
+// 用户注册数据
+const user = reactive({})
+
+// 注册表单元素对象
+const registerForm = ref(null)
+
+// 注册表单校验规则
+const rules = {
+    userName: [
+        {
+            required: true,
+            message: '请输入用户名',
+            trigger: 'blur'
+        }
+    ],
+    userPwd: [
+        {
+            required: true,
+            pattern: /^[a-zA-Z]\w{5,17}$/,
+            message: '字母开头，长度6~18，包含字母、数字和下划线',
+            trigger: 'change'
+        }
+    ],
+    userMail: [
+        {
+            required: true,
+            pattern: /^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/,
+            message: '请输入正确格式的邮箱',
+            trigger: 'change'
+        }
+    ],
+    userCode:[
+        {
+            required: true,
+            message: '请输入验证码',
+            trigger: 'blur'
+        }
+    ]
+}
+
+// 用户注册数据提交
+const handleRegisterSubmit =  () => {
+    registerForm.value.validate(async (valid) => {
+        if (valid) {
+            try {
+                const params =  { ...user }
+                const res = await request.register(params)
+                if (res) {
+                    ElMessage.success('注册成功')
+                    emit('toChange')
+                }
+            } catch (error) {
+                console.error(error)
+            }
+        }
+    })
 }
 
 // 父子数据通信
@@ -201,19 +199,13 @@ const props = defineProps({
 })
 const emit = defineEmits(['toChange'])
 
-// 逻辑调度区域
-// 用户注册相关逻辑
 const { 
-    user,
-    rules,
-    registerForm,
     computeTime,
     isShow,
     onClose,
     handleIsMailEmpty,
-    handleSendCode,
-    handleRegisterSubmit
-} = useRegisterEffect()
+    handleSendCode
+} = useSendCodeEffect(user)
 </script>
 
 <style lang="scss">
