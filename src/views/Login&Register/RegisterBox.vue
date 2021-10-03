@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-09-17 19:50:03
- * @LastEditTime: 2021-10-01 23:46:15
+ * @LastEditTime: 2021-10-02 11:42:47
  * @LastEditors: Please set LastEditors
  * @Description: 注册模块页面组件
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\Login&Register\RegisterBox.vue
@@ -69,7 +69,9 @@
 </template>
 
 <script>
-// 发送验证码逻辑复用点
+/**
+ * @description: 滑动拼图验证和验证码发送相关逻辑复用
+ */
 export const useSendCodeEffect = (user) => {
     // 获取验证码倒计时
     const computeTime = ref(0)
@@ -124,7 +126,6 @@ export const useSendCodeEffect = (user) => {
     }
 }
 </script>
-
 
 <script setup>
 import { ref, reactive } from 'vue'

@@ -1,9 +1,9 @@
 <!--
- * @Author: your name
+ * @Author: 胡晨明
  * @Date: 2021-09-22 20:53:20
- * @LastEditTime: 2021-10-02 00:09:21
+ * @LastEditTime: 2021-10-03 12:01:21
  * @LastEditors: Please set LastEditors
- * @Description: In User Settings Edit
+ * @Description: 更新密码页面组件
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\Setting\UpdatePassword.vue
 -->
 <template>
@@ -14,7 +14,11 @@
             ref="pwdForm"
             :rules="pwdRules"
             label-width="90px">
-            <el-form-item label="旧密码:" prop="oldPwd" class="updatePwd__pwdForm__oldPwd">
+            <el-form-item
+                label="旧密码:"
+                prop="oldPwd"
+                class="updatePwd__pwdForm__oldPwd"
+                v-if="isVerify">
                 <el-input v-model="userPwd.oldPwd" show-password>
                     <template #append>
                         <span @click="trigger = true">忘记密码</span>
@@ -43,8 +47,8 @@
             </el-form-item>
             <div>
                 <el-form-item label-width="0px" class="updatePwd__pwdForm__submit">
-                    <el-button plain @click="">取消</el-button>
-                    <el-button type="primary">确定</el-button>
+                    <el-button plain @click="router.push('/setting/profile')">取消</el-button>
+                    <el-button type="primary" @click="handleUpdatePassword">确定</el-button>
                 </el-form-item>
             </div>
         </el-form>
@@ -67,8 +71,8 @@
                 <el-form-item label="发送邮箱:">
                     <span>{{mailCode.userMail}}</span>
                 </el-form-item>
-                <el-form-item label="验证码:" prop="code">
-                    <el-input v-model="mailCode.code">
+                <el-form-item label="验证码:" prop="userCode">
+                    <el-input v-model="mailCode.userCode">
                         <template #suffix>
                             <div class="updatePwd__requireButton" @click="handleIsMailEmpty">
                                 {{computeTime>0?`${computeTime}s`:'获取验证码'}}
@@ -79,7 +83,7 @@
                 <div>
                     <el-form-item class="updatePwd__codeConfirm">
                         <el-button plain @click="trigger = false">取消</el-button>
-                        <el-button type="primary">确定</el-button>
+                        <el-button type="primary" @click="handleVerifyCode">确定</el-button>
                     </el-form-item>
                 </div>
             </el-form>
@@ -95,7 +99,6 @@ import { useStore } from 'vuex'
 import { useSendCodeEffect } from '../Login&Register/RegisterBox.vue'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import request from '../../api/index'
-import debounce from '../../utils/debounce'
 import Vcode from "vue3-puzzle-vcode";
 
 // 状态管理仓库
@@ -149,6 +152,8 @@ const pwdRules = {
             validator: (rule, value, callback) => {
                 if (value !== userPwd.newPwd) {
                     callback(new Error('密码不一致'))
+                } else {
+                    callback()
                 }
             }
         }
@@ -158,13 +163,77 @@ const pwdRules = {
 // 对话框状态变量
 const trigger = ref(false)
 
-// 用户邮箱数据
+// 用户邮箱验证数据
 const mailCode = reactive({
     userMail: store.state.userInfo.userMail
 })
 
 // 邮箱验证表单对象
 const mailForm = ref(null)
+
+// 邮箱验证表单校验规则
+const mailRules = {
+    userCode: [
+        {
+            required: true,
+            message: '请输入验证码',
+            trigger: 'blur'
+        }
+    ]
+}
+
+// 旧密码输入框显示状态
+const isVerify = ref(true)
+
+// 邮箱验证码验证
+const handleVerifyCode = () => {
+    mailForm.value.validate(async (valid) => {
+        if (valid) {
+            try {
+                const params = { ...mailCode }
+                let res = await request.verifyCode(params)
+                if (res) {
+                    ElMessage.success('验证成功！')
+                    trigger.value = false
+                    isVerify.value = false
+                }
+            } catch (error) {
+                console.log(`${error}`)
+            }
+        }
+    })
+}
+
+// 密码更改数据提交
+const handleUpdatePassword = () => {
+    pwdForm.value.validate((valid) => {
+        if (valid) {
+            ElMessageBox.confirm('请确认是否更改', '确认框', {
+                cancelButtonText: '取消',
+                confirmButtonText: '确认',
+                type: 'warning',
+            })
+            .then(async () => {
+                const { oldPwd, newPwd } = userPwd
+                let params = { oldPwd, newPwd }
+                // 邮箱验证通过，无需旧密码
+                if (!isVerify.value) {
+                    delete params.oldPwd
+                }
+                let res = await request.postUpdatePassword(params)
+                if (res) {
+                    ElMessage.success('修改成功')
+                    router.push('/setting/profile')
+                } else {
+                    ElMessage.error('旧密码不正确')
+                }
+            })
+            .catch(() => {
+                return
+            })
+        }
+    })
+}
 
 // 发送邮箱验证码逻辑
 const { 
