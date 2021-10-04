@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-09-17 19:50:03
- * @LastEditTime: 2021-10-02 11:42:47
+ * @LastEditTime: 2021-10-03 23:43:09
  * @LastEditors: Please set LastEditors
  * @Description: 注册模块页面组件
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\Login&Register\RegisterBox.vue
@@ -60,7 +60,7 @@
             <el-form-item>
                 <el-button class="registerBox__Input__registerButton" type="primary" @click="handleRegisterSubmit">注册</el-button>
             </el-form-item>
-            <el-form-item class="registerBox__Input__login" @click="$emit('toChange')">
+            <el-form-item class="registerBox__Input__login" @click="$emit('update:mode', true)">
                 去登陆 >>
             </el-form-item>
         </el-form>
@@ -185,7 +185,7 @@ const handleRegisterSubmit =  () => {
                 const res = await request.register(params)
                 if (res) {
                     ElMessage.success('注册成功')
-                    emit('toChange')
+                    emit('update:mode', true)
                 }
             } catch (error) {
                 console.error(error)
@@ -198,7 +198,8 @@ const handleRegisterSubmit =  () => {
 const props = defineProps({
   model: Boolean
 })
-const emit = defineEmits(['toChange'])
+
+const emit = defineEmits(['update:mode'])
 
 const { 
     computeTime,

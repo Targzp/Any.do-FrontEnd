@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-09-17 17:34:59
- * @LastEditTime: 2021-09-21 23:20:17
+ * @LastEditTime: 2021-10-03 23:43:42
  * @LastEditors: Please set LastEditors
  * @Description: 登录模块页面组件
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\Login&Register\LoginBox.vue
@@ -79,7 +79,7 @@
                         type="primary"
                         @click="handleLoginSubmit">登录</el-button>
                 </el-form-item>
-                <el-form-item class="loginBox__Input__register" @click="$emit('toChange')">
+                <el-form-item class="loginBox__Input__register" @click="$emit('update:mode', false)">
                     免费注册
                 </el-form-item>
             </el-form>
@@ -245,8 +245,9 @@ const useLoginEffect = () => {
 
 // 父子数据通信
 const props = defineProps({
-  model: Boolean
+  mode: Boolean
 })
+const emit = defineEmits(['update:mode'])
 
 // 逻辑调度
 const {

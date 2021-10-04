@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-09-22 20:53:20
- * @LastEditTime: 2021-10-03 12:01:21
+ * @LastEditTime: 2021-10-03 23:36:05
  * @LastEditors: Please set LastEditors
  * @Description: 更新密码页面组件
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\Setting\UpdatePassword.vue
@@ -224,8 +224,6 @@ const handleUpdatePassword = () => {
                 if (res) {
                     ElMessage.success('修改成功')
                     router.push('/setting/profile')
-                } else {
-                    ElMessage.error('旧密码不正确')
                 }
             })
             .catch(() => {

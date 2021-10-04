@@ -91,5 +91,14 @@ export default {
             data: params,
             mock: false
         })
+    },
+    // 绑定邮箱更新接口
+    postUpdateBindMail(params) {
+        return request({
+            method: 'post',
+            url: '/users/updatebindmail',
+            data: params,
+            mock: false
+        })
     }
 }

@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-09-22 20:53:41
- * @LastEditTime: 2021-09-30 23:34:59
+ * @LastEditTime: 2021-10-04 16:40:13
  * @LastEditors: Please set LastEditors
  * @Description: 设置基本账户信息界面组件
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\Setting\Profile.vue
@@ -23,7 +23,7 @@
                         :before-upload="beforeAvatarUpload"
                         name="Avatar"
                     >
-                        <el-avatar v-if="userAvatar!=' '" shape="square" :size="70" fit="fill" :src="userAvatar"></el-avatar>
+                        <el-avatar v-if="avatar!=' '" shape="square" :size="70" fit="fill" :src="avatar"></el-avatar>
                         <i v-else class="el-icon-plus avatar-uploader-icon"></i>
                     </el-upload>
                 </el-form-item>
@@ -51,7 +51,7 @@
             <el-form-item label="电子邮箱：">
                 {{user.userMail}}
                 <span>
-                    <el-link type="primary" :underline="false">更改绑定邮箱</el-link>
+                    <el-link type="primary" :underline="false" @click="router.push('/setting/bindMail')">更改绑定邮箱</el-link>
                 </span>
             </el-form-item>
             <el-form-item label="账号管理：">
@@ -97,9 +97,10 @@
 </template>
 
 <script setup>
-import { ref, reactive, toRefs } from 'vue'
+import { ref, reactive, toRefs, computed } from 'vue'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
+import config from '../../config/index'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import VuePictureCropper, { cropper } from 'vue-picture-cropper/dist/esm'
 import request from '../../api/index'
@@ -115,7 +116,14 @@ const router = useRouter()
 const user = reactive({})
 
 // 图片路径
-const { userAvatar } = toRefs(store.state.userInfo)
+const avatar = computed(() => {
+    const { userAvatar } = toRefs(store.state.userInfo)
+    if (userAvatar.value !== ' ') {
+        return `http://localhost:${config.port}/${userAvatar.value}`
+    } else {
+        return ' '
+    }
+})
 
 // 个人信息表单对象
 const userForm = ref(null)
@@ -194,7 +202,7 @@ const postImage = async () => {
             store.commit('setUserAvatar', res.url)
         }
     } catch (error) {
-        console.log(error)
+        console.log(`${error}`)
     }
 }
 

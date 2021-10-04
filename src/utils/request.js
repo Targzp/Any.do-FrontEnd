@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-09-18 14:26:38
- * @LastEditTime: 2021-09-26 18:38:13
+ * @LastEditTime: 2021-10-03 23:47:23
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\utils\request.js
@@ -28,9 +28,7 @@ service.interceptors.request.use((req) => {
     let token = ''
     try {
         token = storage.getItem('userInfo').token
-    } catch (error) {
-        console.warn('Not exist token')
-    }
+    } catch (error) {}
     if (!headers.authorization) {
         headers.authorization = 'Bearer ' + token
     }

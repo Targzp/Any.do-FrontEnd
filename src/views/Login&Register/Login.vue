@@ -18,8 +18,8 @@
         <div class="container">
             <!-- 登录&注册窗口 -->
             <transition name="model" mode="out-in">
-                <login-box v-if="modelChange" :model="modelChange" @toChange="modelChange=false"></login-box>
-                <register-box v-else :model="modelChange" @toChange="modelChange=true"></register-box>
+                <login-box v-if="modelChange" v-model:mode="modelChange"></login-box>
+                <register-box v-else v-model:mode="modelChange"></register-box>
             </transition>
         </div>
     </div>
