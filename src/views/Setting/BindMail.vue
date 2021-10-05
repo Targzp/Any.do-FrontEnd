@@ -1,7 +1,7 @@
 <!--
  * @Author: your name
  * @Date: 2021-09-22 20:53:10
- * @LastEditTime: 2021-10-03 17:55:18
+ * @LastEditTime: 2021-10-05 01:09:08
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\Setting\BindMail.vue
@@ -40,10 +40,10 @@
 <script setup>
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import { useSendCodeEffect } from '../Login&Register/RegisterBox.vue'
+import { useSendCodeEffect } from '../../utils/verifyMail.js'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import request from '../../api/index'
-import Vcode from "vue3-puzzle-vcode";
+import Vcode from "vue3-puzzle-vcode"
 
 // 路由
 const router = useRouter()

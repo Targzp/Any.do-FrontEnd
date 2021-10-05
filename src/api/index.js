@@ -100,5 +100,14 @@ export default {
             data: params,
             mock: false
         })
+    },
+    // 注销账户接口
+    deleteAccount(params) {
+        return request({
+            method: 'post',
+            url: '/users/deleteaccount',
+            data: params,
+            mock: false
+        })
     }
 }

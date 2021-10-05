@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-09-17 21:00:19
- * @LastEditTime: 2021-10-03 23:59:47
+ * @LastEditTime: 2021-10-05 17:51:35
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\main.js
@@ -17,4 +17,4 @@ import './assets/style/index.scss'
 
 const app = createApp(App)
 app.use(ElementPlus, { size: 'small', zIndex: 3000, locale: zhCn })
-app.use(router).use(store).mount('#app')
+app.use(store).use(router).mount('#app')

@@ -1,7 +1,7 @@
 /*
  * @Author: 胡晨明
  * @Date: 2021-08-15 21:12:02
- * @LastEditTime: 2021-09-30 00:27:29
+ * @LastEditTime: 2021-10-05 17:58:26
  * @LastEditors: Please set LastEditors
  * @Description: 前端路由配置
  * @FilePath: \bloge:\Vue_store\manager-fe\src\router\index.js
@@ -31,7 +31,7 @@ const routes = [{
     component: () => import('../views/Login&Register/Login.vue'),
     beforeEnter: (to, from, next) => {
       const userInfo = storage.getItem('userInfo')
-      userInfo ? next({ name: 'Home' }) : next()
+      userInfo && Object.keys(userInfo).length ? next({ name: 'Home' }) : next()
     }
   },
   {
@@ -93,7 +93,7 @@ router.beforeEach((to, from, next) => {
   // 检查路由是否存在
   if (router.hasRoute(name)) {
     const isLogin = (name === 'Login');
-    if (userInfo || isLogin) {
+    if ((userInfo && Object.keys(userInfo).length) || isLogin) {
       next()
     } else {
       ElMessage.warning('请先登录')

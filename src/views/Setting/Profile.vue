@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-09-22 20:53:41
- * @LastEditTime: 2021-10-04 16:40:13
+ * @LastEditTime: 2021-10-05 18:22:32
  * @LastEditors: Please set LastEditors
  * @Description: 设置基本账户信息界面组件
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\Setting\Profile.vue
@@ -55,7 +55,7 @@
                 </span>
             </el-form-item>
             <el-form-item label="账号管理：">
-                <el-link type="danger" :underline="false">注销账号</el-link>
+                <el-link type="danger" :underline="false" @click="handleDelAccount">注销账号</el-link>
             </el-form-item>
             <div>
                 <el-form-item label-width="0px" class="profile__submit">
@@ -63,6 +63,44 @@
                 </el-form-item>
             </div>
         </el-form>
+        <!-- 邮箱验证 -->
+        <el-dialog
+            title="邮箱验证"
+            :width="400"
+            top="10%"
+            center
+            v-model="mailTrigger"
+            :close-on-click-modal="false"
+            :close-on-press-escape="false"
+            :show-close="false"
+        >
+            <el-form
+                :model="mailCode"
+                ref="mailForm"
+                :rules="mailRules"
+                label-width="100px"
+            >
+                <el-form-item label="发送邮箱:">
+                    <span>{{user.userMail}}</span>
+                </el-form-item>
+                <el-form-item label="验证码:" prop="userCode">
+                    <el-input v-model="mailCode.userCode">
+                        <template #suffix>
+                            <div class="profile__requireButton" @click="handleIsMailEmpty">
+                                {{computeTime>0?`${computeTime}s`:'获取验证码'}}
+                            </div>
+                        </template>
+                    </el-input>
+                </el-form-item>
+                <div>
+                    <el-form-item class="profile__codeConfirm">
+                        <el-button plain @click="mailTrigger = false">取消</el-button>
+                        <el-button type="primary" @click="handleVerifyCode">确定</el-button>
+                    </el-form-item>
+                </div>
+            </el-form>
+            <Vcode :show="isShow" @success="handleSendCode" @close="onClose"/>
+        </el-dialog>
         <!-- 裁剪框 -->
         <teleport to='body'>
             <el-dialog
@@ -105,6 +143,8 @@ import { ElMessageBox, ElMessage } from 'element-plus'
 import VuePictureCropper, { cropper } from 'vue-picture-cropper/dist/esm'
 import request from '../../api/index'
 import debounce from '../../utils/debounce'
+import Vcode from "vue3-puzzle-vcode"
+import { useSendCodeEffect } from '../../utils/verifyMail.js'
 
 // 状态管理仓库
 const store = useStore()
@@ -118,7 +158,7 @@ const user = reactive({})
 // 图片路径
 const avatar = computed(() => {
     const { userAvatar } = toRefs(store.state.userInfo)
-    if (userAvatar.value !== ' ') {
+    if (userAvatar && userAvatar.value !== ' ') {
         return `http://localhost:${config.port}/${userAvatar.value}`
     } else {
         return ' '
@@ -231,6 +271,69 @@ const handlePostUserProfile = () => {
     })
 }
 
+// 裁剪框状态
+const mailTrigger = ref(false)
+
+// 用户邮箱验证数据
+const mailCode = reactive({})
+
+// 邮箱验证表单校验规则
+const mailRules = {
+    userCode: [
+        {
+            required: true,
+            message: '请输入验证码',
+            trigger: 'blur'
+        }
+    ]
+}
+
+// 邮箱验证表单对象
+const mailForm = ref(null)
+
+// 注销账户初始确认
+const handleDelAccount = () => {
+    ElMessageBox.confirm('请确认是否注销账户', '确认框', {
+        cancelButtonText: '取消',
+        confirmButtonText: '确认',
+        type: 'warning',
+    })
+    .then(() => {
+        mailTrigger.value = true
+    })
+    .catch(() => {
+        return
+    })
+}
+
+// 验证码校验并注销账户
+const handleVerifyCode = () => {
+    mailForm.value.validate (async (valid) => {
+        if (valid) {
+            try {
+                const params = { userMail: user.userMail, ...mailCode }
+                let res = await request.deleteAccount(params)
+                if (res) {
+                    ElMessage.success('注销成功')
+                    router.push('/login')
+                    store.commit('saveUserInfo', {})
+                }
+            } catch (error) {
+                console.log(`${error}`)
+            }
+        }
+    })
+}
+
+// 发送邮箱验证码逻辑
+const { 
+    computeTime,
+    isShow,
+    onClose,
+    handleIsMailEmpty,
+    handleSendCode
+} = useSendCodeEffect(user)
+
 // 获取用户个人信息
 ;(async () => {
     try {
@@ -243,6 +346,7 @@ const handlePostUserProfile = () => {
         console.log(`${error}`)
     }
 })()
+
 </script>
 
 <style lang="scss">
@@ -267,13 +371,38 @@ const handlePostUserProfile = () => {
             align-self: flex-end;
         }
     }
+
     &__submit{
         text-align: center;
     }
+
+    &__requireButton {
+            cursor: pointer;
+    }
+
+    &__codeConfirm {
+        margin-left: .15rem;
+    }
+
     .el-input{
         width: 2rem;
     }
+
+    .el-dialog__header {
+        text-align: left;
+        font-size: .12rem;
+    }
+
+    .el-dialog__body {
+        padding-top: .08rem;
+        padding-bottom: .05rem;
+    }
+
+    .el-overlay {
+        z-index: 998 !important;
+    }
 }
+
 .imgCropper__button{
     margin-top: .2rem;
     text-align: center;

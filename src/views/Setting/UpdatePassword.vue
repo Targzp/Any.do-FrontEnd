@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-09-22 20:53:20
- * @LastEditTime: 2021-10-03 23:36:05
+ * @LastEditTime: 2021-10-05 01:08:44
  * @LastEditors: Please set LastEditors
  * @Description: 更新密码页面组件
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\Setting\UpdatePassword.vue
@@ -96,10 +96,10 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
-import { useSendCodeEffect } from '../Login&Register/RegisterBox.vue'
+import { useSendCodeEffect } from '../../utils/verifyMail.js'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import request from '../../api/index'
-import Vcode from "vue3-puzzle-vcode";
+import Vcode from "vue3-puzzle-vcode"
 
 // 状态管理仓库
 const store = useStore()
@@ -168,9 +168,6 @@ const mailCode = reactive({
     userMail: store.state.userInfo.userMail
 })
 
-// 邮箱验证表单对象
-const mailForm = ref(null)
-
 // 邮箱验证表单校验规则
 const mailRules = {
     userCode: [
@@ -181,6 +178,9 @@ const mailRules = {
         }
     ]
 }
+
+// 邮箱验证表单对象
+const mailForm = ref(null)
 
 // 旧密码输入框显示状态
 const isVerify = ref(true)

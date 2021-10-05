@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-09-17 17:34:59
- * @LastEditTime: 2021-10-03 23:43:42
+ * @LastEditTime: 2021-10-04 19:53:13
  * @LastEditors: Please set LastEditors
  * @Description: 登录模块页面组件
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\Login&Register\LoginBox.vue
@@ -89,180 +89,108 @@
 </template>
 
 <script setup>
-import { ElMessage } from 'element-plus'
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
+import { ElMessage } from 'element-plus'
+import { useSendCodeEffect } from '../../utils/verifyMail.js'
 import request from '../../api/index'
 import Vcode from 'vue3-puzzle-vcode'
 
 const router = useRouter() 
 const store = useStore()
 
-/**
- * @description: 登录模块相关逻辑
- */
-const useLoginEffect = () => {
-    // 用户登录数据
-    const user = reactive({})
+// 用户登录数据
+const user = reactive({})
 
-    // 登录模式
-    const loginModel = ref(true)
+// 登录模式
+const loginModel = ref(true)
 
-    // 登录表单对象
-    const loginForm = ref(null)
+// 登录表单对象
+const loginForm = ref(null)
 
-    // 输入密码计数器
-    let pwdFrequency = 0
+// 输入密码计数器
+let pwdFrequency = 0
 
-    const rules = {
-        userName: [
-            {
-                required: true,
-                message: '请输入用户名',
-                trigger: 'blur'
-            }
-        ],
-        userPwd: [
-            {
-                required: true,
-                message: '请输入密码',
-                trigger: 'blur'
-            }
-        ],
-        userMail: [
-            {
-                required: true,
-                pattern: /^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/,
-                message: '请输入正确格式的邮箱',
-                trigger: 'change'
-            }
-        ],
-        userCode:[
-            {
-                required: true,
-                message: '请输入验证码',
-                trigger: 'blur'
-            }
-        ]
-    }
-
-        // 获取验证码倒计时
-    const computeTime = ref(0)
-
-    // 拼图验证模态框的显示
-    const isShow = ref(false)
-
-    // 关闭拼图验证模态框
-    const onClose = () => {
-      isShow.value = false
-    }
-
-    // 判断手机号是否已填
-    const handleIsMailEmpty = () => {
-        if (computeTime > 0) {
-            return 
+const rules = {
+    userName: [
+        {
+            required: true,
+            message: '请输入用户名',
+            trigger: 'blur'
         }
-        if (!user.userMail) {
-            ElMessage.warning('请输入邮箱')
-            return
+    ],
+    userPwd: [
+        {
+            required: true,
+            message: '请输入密码',
+            trigger: 'blur'
         }
-        if (!computeTime.value) {
-            isShow.value = true
+    ],
+    userMail: [
+        {
+            required: true,
+            pattern: /^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/,
+            message: '请输入正确格式的邮箱',
+            trigger: 'change'
         }
-    }
-
-    // 验证成功，需要手动关闭模态框并获取验证码
-    const handleSendCode = async () => {
-        onClose()
-        if (!loginModel.value) {
-            computeTime.value = 60
-            let intervalId = setInterval(() => {
-                computeTime.value--
-                if (computeTime.value === 0) {
-                    clearInterval(intervalId)
-                }
-            }, 1000);
-            
-            const params = { userMail: user.userMail }
-            try {
-                const res = await request.sendcode(params)
-                if (res) {
-                    ElMessage.success('发送成功')
-                }
-            } catch (error) {
-                console.error(error)
-            }
+    ],
+    userCode:[
+        {
+            required: true,
+            message: '请输入验证码',
+            trigger: 'blur'
         }
-    }
+    ]
+}
 
-    // 控制密码/短信登录模式切换
-    const handleChangeModel = (tip) => {
-        if (tip === 'password') {
-            loginModel.value = true
-        } else {
-            loginModel.value = false
-        }
-    }
-
-    // 用户登录数据提交
-    const handleLoginSubmit = () => {
-        loginForm.value.validate(async (valid) => {
-            if (valid) {
-                try {
-                    const params = { ...user }
-                    const res = await request.login(params)
-                    if (res) {
-                        ElMessage.success('登录成功')
-                        store.commit('saveUserInfo', res)
-                        router.push({name: 'Home'})
-                    }
-                } catch (error) {
-                    // 当账户或密码输错超过三次则需进行人机验证
-                    pwdFrequency++
-                    if (pwdFrequency > 3) {
-                        isShow.value = true
-                    }
-                }
-            }
-        })
-    }
-
-    return {
-        loginModel,
-        user,
-        rules,
-        loginForm,
-        computeTime,
-        isShow,
-        onClose,
-        handleIsMailEmpty,
-        handleSendCode,
-        handleChangeModel,
-        handleLoginSubmit
+// 控制密码/短信登录模式切换
+const handleChangeModel = (tip) => {
+    if (tip === 'password') {
+        loginModel.value = true
+    } else {
+        loginModel.value = false
     }
 }
+
+// 用户登录数据提交
+const handleLoginSubmit = () => {
+    loginForm.value.validate(async (valid) => {
+        if (valid) {
+            try {
+                const params = { ...user }
+                const res = await request.login(params)
+                if (res) {
+                    ElMessage.success('登录成功')
+                    store.commit('saveUserInfo', res)
+                    router.push({name: 'Home'})
+                }
+            } catch (error) {
+                // 当账户或密码输错超过三次则需进行人机验证
+                pwdFrequency++
+                if (pwdFrequency > 3) {
+                    isShow.value = true
+                }
+            }
+        }
+    })
+}
+
+// 发送邮箱验证码逻辑
+const { 
+    computeTime,
+    isShow,
+    onClose,
+    handleIsMailEmpty,
+    handleSendCode
+} = useSendCodeEffect(user)
+
 
 // 父子数据通信
 const props = defineProps({
   mode: Boolean
 })
 const emit = defineEmits(['update:mode'])
-
-// 逻辑调度
-const {
-    loginModel,
-    user,
-    rules,
-    loginForm,
-    computeTime,
-    isShow,
-    onClose,
-    handleIsMailEmpty,
-    handleSendCode,
-    handleChangeModel,
-    handleLoginSubmit
-} = useLoginEffect()
 </script>
 
 <style lang="scss">
