@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-09-17 19:50:03
- * @LastEditTime: 2021-10-05 01:09:26
+ * @LastEditTime: 2021-10-05 22:43:01
  * @LastEditors: Please set LastEditors
  * @Description: 注册模块页面组件
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\Login&Register\RegisterBox.vue
@@ -26,11 +26,18 @@
             </el-form-item>
             <el-form-item prop="userPwd">
                 <el-input
-                    type="password"
                     prefix-icon="el-icon-lock"
                     v-model="user.userPwd"
                     placeholder="请输入密码"
+                    show-password
                 />
+            </el-form-item>
+            <el-form-item prop="confirmPwd">
+                <el-input
+                    v-model="user.confirmPwd"
+                    prefix-icon="el-icon-lock"
+                    placeholder="请确认密码"
+                    show-password/>
             </el-form-item>
             <el-form-item prop="userMail">
                 <el-input
@@ -96,14 +103,38 @@ const rules = {
     userPwd: [
         {
             required: true,
+            message: '请输入密码',
+            trigger: 'blur'
+        },
+        {
             pattern: /^[a-zA-Z]\w{5,17}$/,
             message: '字母开头，长度6~18，包含字母、数字和下划线',
             trigger: 'change'
         }
     ],
+    confirmPwd: [
+        {
+            required: true,
+            message: '请确认密码',
+            trigger: 'blur'
+        },
+        {
+            validator: (rule, value, callback) => {
+                if (value !== user.userPwd) {
+                    callback(new Error('密码不一致'))
+                } else {
+                    callback()
+                }
+            }
+        }
+    ],
     userMail: [
         {
             required: true,
+            message: '请确认密码',
+            trigger: 'blur'
+        },
+        {
             pattern: /^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/,
             message: '请输入正确格式的邮箱',
             trigger: 'change'
@@ -124,6 +155,8 @@ const handleRegisterSubmit =  () => {
         if (valid) {
             try {
                 const params =  { ...user }
+                // 删除确认密码额外数据
+                delete params.confirmPwd
                 const res = await request.register(params)
                 if (res) {
                     ElMessage.success('注册成功')
