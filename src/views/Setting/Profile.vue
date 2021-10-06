@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-09-22 20:53:41
- * @LastEditTime: 2021-10-05 18:22:32
+ * @LastEditTime: 2021-10-07 00:01:08
  * @LastEditors: Please set LastEditors
  * @Description: 设置基本账户信息界面组件
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\Setting\Profile.vue
@@ -41,6 +41,7 @@
                 <el-date-picker
                     v-model="user.userBirthday"
                     type="date"
+                    :editable="false"
                     placeholder="请输入您的生日"
                     ></el-date-picker>
             </el-form-item>
@@ -66,7 +67,7 @@
         <!-- 邮箱验证 -->
         <el-dialog
             title="邮箱验证"
-            :width="400"
+            :width="350"
             top="10%"
             center
             v-model="mailTrigger"
@@ -159,7 +160,7 @@ const user = reactive({})
 const avatar = computed(() => {
     const { userAvatar } = toRefs(store.state.userInfo)
     if (userAvatar && userAvatar.value !== ' ') {
-        return `http://localhost:${config.port}/${userAvatar.value}`
+        return `http://192.168.105.5:${config.port}/${userAvatar.value}`
     } else {
         return ' '
     }
@@ -357,7 +358,7 @@ const {
             width: .7rem;
             height: .7rem;
             font-size: .25rem;
-            outline: .01rem solid #ccc;
+            border: .01rem solid #ccc;
             border-radius: .06rem;
             .el-icon-plus{
                 color: #ccc;
@@ -381,7 +382,7 @@ const {
     }
 
     &__codeConfirm {
-        margin-left: .15rem;
+        margin-left: -.08rem;
     }
 
     .el-input{

@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-09-17 17:34:59
- * @LastEditTime: 2021-10-04 19:53:13
+ * @LastEditTime: 2021-10-06 23:12:03
  * @LastEditors: Please set LastEditors
  * @Description: 登录模块页面组件
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\Login&Register\LoginBox.vue
@@ -130,6 +130,10 @@ const rules = {
     userMail: [
         {
             required: true,
+            message: '请输入邮箱',
+            trigger: 'blur'
+        },
+        {
             pattern: /^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/,
             message: '请输入正确格式的邮箱',
             trigger: 'change'

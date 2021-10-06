@@ -54,7 +54,7 @@
         </el-form>
         <el-dialog
             title="邮箱验证"
-            :width="400"
+            :width="350"
             top="10%"
             center
             v-model="trigger"
@@ -276,7 +276,7 @@ const {
     }
 
     &__codeConfirm {
-        margin-left: .15rem;
+        margin-left: -.08rem;
     }
 
     /* element-plus 样式修改  */

@@ -7,8 +7,19 @@ body {
     overflow: hidden;
 }
 
+/* Element 样式的全局更改 */
+
 .el-message, .el-loading-spinner{
     font-size: 16px;
+}
+
+.el-message-box {
+    display: block;
+    width: 3.5rem;
+    position: absolute;
+    top: 35%;
+    left: 50%;
+    margin-left: -1.75rem;
 }
 
 * {

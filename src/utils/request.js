@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-09-18 14:26:38
- * @LastEditTime: 2021-10-03 23:47:23
+ * @LastEditTime: 2021-10-06 23:34:40
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\utils\request.js
@@ -13,7 +13,7 @@ import {
 } from 'element-plus'
 import router from '../router/index'
 import storage from './storage'
-const TOKEN_INVALID = 'Token认证失败，请重新登录'
+const TOKEN_INVALID = '登录时效已过'
 const NETWORK_ERROR = '网络请求异常，请稍后重试'
 
 // 创建 axios 实例,添加全局配置
