@@ -1,49 +1,24 @@
+@import './iconfont.scss';
+@import './customize_elementPlus.scss';
+
+/* 默认 rem 相对字体大小 */
 html{
     font-size: 100px;
 }
 
+/* body 样式更改 */
 body {
+    background-image: url('../images/background.jpg');
+    background-repeat: no-repeat;
+    background-size: cover;
     margin: 0px;
     overflow: hidden;
-}
-
-/* Element 样式的全局更改 */
-
-.el-message, .el-loading-spinner{
-    font-size: 16px;
-}
-
-.el-message-box {
-    display: block;
-    width: 3.5rem;
-    position: absolute;
-    top: 35%;
-    left: 50%;
-    margin-left: -1.75rem;
-}
-
-* {
-    // 去除点击时的蓝色背景
-    -webkit-tap-highlight-color: transparent;
-}
-
-/* 实现波浪效果 */
-.custom-shape-divider-top-1631783178 {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    overflow: hidden;
-    line-height: 0;
-}
-
-.custom-shape-divider-top-1631783178 svg {
+    perspective: 800px;
+    transform-style: preserve-3d;
     position: relative;
-    display: block;
-    width: calc(105% + 1.3px);
-    height: 92px;
 }
 
-.custom-shape-divider-top-1631783178 .shape-fill {
-    fill: #FFFFFF;
+/* 去除点击时的蓝色背景*/
+* {
+    -webkit-tap-highlight-color: transparent;
 }

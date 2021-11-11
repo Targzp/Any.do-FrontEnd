@@ -1,0 +1,21 @@
+/* 垂直分块布局 */
+@mixin listPieceStyle {
+    padding: .05rem 0;
+    margin: 0 .05rem;
+    border-bottom: .01rem solid $devider-color;
+    display: flex;
+    flex-flow: column nowrap;
+}
+
+/* 背景模糊处理 */
+@mixin filter_blur {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    filter: blur(.2rem);
+    margin: -.3rem;
+    z-index: -1;
+}

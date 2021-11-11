@@ -1,15 +1,12 @@
-/*
- * @Author: your name
- * @Date: 2021-09-20 23:47:00
- * @LastEditTime: 2021-10-05 17:05:18
- * @LastEditors: Please set LastEditors
- * @Description: In User Settings Edit
- * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\store\mutations.js
- */
-import storage from '../utils/storage'
-import config from '../config/index'
+import storage from '../../utils/storage'
 
-export default {
+// initial state
+const state = () => ({
+    userInfo: storage.getItem('userInfo') || {}, // 获取用户信息
+})
+
+// mutations
+const mutations = {
   /**
    * @description: 存储本地用户数据
    * @param {*} state
@@ -37,4 +34,9 @@ export default {
     state.userInfo.userAvatar = avatar
     storage.setItem('userInfo', state.userInfo)
   }
+}
+
+export default {
+    state,
+    mutations
 }

@@ -8,23 +8,28 @@
   },
   "dependencies": {
     "@element-plus/icons": "0.0.11",
-    "axios": "^0.22.0",
+    "axios": "^0.23.0",
     "crypto-js": "^4.1.1",
     "default-passive-events": "^2.0.0",
-    "element-plus": "^1.1.0-beta.19",
-    "naive-ui": "^2.19.3",
+    "element-plus": "^1.1.0-beta.20",
+    "lodash": "^4.17.21",
+    "naive-ui": "^2.19.8",
     "unplugin-element-plus": "^0.1.0",
     "unplugin-vue-components": "^0.15.6",
+    "v-calendar": "^3.0.0-alpha.6",
     "vue": "^3.2.6",
-    "vue-picture-cropper": "^0.5.0",
+    "vue-picture-cropper": "^0.5.1",
     "vue-router": "^4.0.11",
     "vue3-puzzle-vcode": "^1.0.0",
+    "vuedraggable": "^4.1.0",
+    "vuemoji-picker": "0.0.7",
     "vuex": "^4.0.2"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^1.9.2",
-    "@vue/compiler-sfc": "^3.2.19",
-    "sass": "^1.42.1",
-    "vite": "^2.6.2"
+    "@vitejs/plugin-vue": "^1.9.3",
+    "@vue/compiler-sfc": "^3.2.20",
+    "sass": "^1.43.2",
+    "unplugin-auto-import": "^0.4.13",
+    "vite": "^2.6.7"
   }
 }

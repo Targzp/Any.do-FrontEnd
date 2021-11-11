@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-09-22 20:53:20
- * @LastEditTime: 2021-10-05 01:08:44
+ * @LastEditTime: 2021-10-15 20:56:30
  * @LastEditors: Please set LastEditors
  * @Description: 更新密码页面组件
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\Setting\UpdatePassword.vue
@@ -13,7 +13,8 @@
             :model="userPwd"
             ref="pwdForm"
             :rules="pwdRules"
-            label-width="90px">
+            label-width="90px"
+            :hide-required-asterisk="true">
             <el-form-item
                 label="旧密码:"
                 prop="oldPwd"
@@ -38,7 +39,6 @@
                         show-password 
                         @focus="showPwdTip = true"
                         @blur="showPwdTip = false"
-
                     ></el-input>
                 </el-tooltip>
             </el-form-item>
@@ -47,7 +47,7 @@
             </el-form-item>
             <div>
                 <el-form-item label-width="0px" class="updatePwd__pwdForm__submit">
-                    <el-button plain @click="router.push('/setting/profile')">取消</el-button>
+                    <el-button @click="router.push('/setting/profile')">取消</el-button>
                     <el-button type="primary" @click="handleUpdatePassword">确定</el-button>
                 </el-form-item>
             </div>
@@ -61,6 +61,7 @@
             :close-on-click-modal="false"
             :close-on-press-escape="false"
             :show-close="false"
+            :append-to-body="true"
         >
             <el-form
                 :model="mailCode"
@@ -72,7 +73,7 @@
                     <span>{{mailCode.userMail}}</span>
                 </el-form-item>
                 <el-form-item label="验证码:" prop="userCode">
-                    <el-input v-model="mailCode.userCode">
+                    <el-input v-model="mailCode.userCode" class="updatePwd__codeInput">
                         <template #suffix>
                             <div class="updatePwd__requireButton" @click="handleIsMailEmpty">
                                 {{computeTime>0?`${computeTime}s`:'获取验证码'}}
@@ -82,8 +83,8 @@
                 </el-form-item>
                 <div>
                     <el-form-item class="updatePwd__codeConfirm">
-                        <el-button plain @click="trigger = false">取消</el-button>
-                        <el-button type="primary" @click="handleVerifyCode">确定</el-button>
+                        <el-button @click="trigger = false">取消</el-button>
+                        <el-button @click="handleVerifyCode">确定</el-button>
                     </el-form-item>
                 </div>
             </el-form>
@@ -103,6 +104,7 @@ import Vcode from "vue3-puzzle-vcode"
 
 // 状态管理仓库
 const store = useStore()
+const { users } = store.state
 
 // 路由
 const router = useRouter()
@@ -165,7 +167,7 @@ const trigger = ref(false)
 
 // 用户邮箱验证数据
 const mailCode = reactive({
-    userMail: store.state.userInfo.userMail
+    userMail: users.userInfo.userMail
 })
 
 // 邮箱验证表单校验规则
@@ -245,7 +247,6 @@ const {
 
 <style lang="scss">
 .updatePwd {
-    margin-top: .3rem;
     padding-right: .2rem;  /* 视觉居中 */
 
     &__pwdForm {
@@ -272,30 +273,25 @@ const {
     }
 
     &__requireButton {
+        color: #909399;
         cursor: pointer;
     }
 
     &__codeConfirm {
         margin-left: -.08rem;
+
+        .el-button--default {
+            background-color: #F2F6FC;
+        }
     }
 
-    /* element-plus 样式修改  */
+    /* element-plus 样式局部自定义修改  */
     .el-input {
         width: 2rem;
     }
 
-    .el-dialog__header {
-        text-align: left;
-        font-size: .12rem;
-    }
-
-    .el-dialog__body {
-        padding-top: .08rem;
-        padding-bottom: .05rem;
-    }
-
-    .el-overlay {
-        z-index: 998 !important;
+    &__codeInput {
+        background-color: #F2F6FC;
     }
 }
 </style>

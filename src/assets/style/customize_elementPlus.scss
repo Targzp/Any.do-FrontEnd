@@ -1,0 +1,68 @@
+@import "./variables.scss";
+@import "./mixins.scss";
+
+/* Element 样式的全局更改 */
+
+.el-message, .el-loading-spinner{
+    font-size: 16px;
+}
+
+.el-message-box {
+    display: block;
+    width: 3.5rem;
+    position: absolute;
+    top: 35%;
+    left: 50%;
+    margin-left: -1.75rem;
+}
+
+.el-dialog {
+    font-size: .16rem;
+    border-radius: 0rem;
+}
+
+.el-dialog__body {
+    padding: .08rem .2rem .05rem .2rem !important;
+}
+
+.el-overlay {
+    z-index: 998 !important;
+}
+
+.el-input__inner {
+    border: none;
+    background-color: rgba(253, 253, 253, 0.35);
+    border-radius: 0rem;
+}
+
+.el-input__prefix {
+    color: #FFF;
+}
+
+.el-input__inner::placeholder {
+    font-size: .13rem;
+    color: rgba(255, 255, 255, 0.45);
+}
+
+.el-input-group__append {
+    background-color: rgba(245, 247, 250, 0.55);
+}
+
+/* 按钮重置 */
+.el-button {
+    border: none;
+    border-radius: .02rem;
+    transition: all .5s ease;
+}
+
+/* 普通按钮重置 */
+.el-button--default {
+    color: #606266;
+    background-color: rgba(255, 255, 255, 0.314);
+}
+
+/* 重要按钮重置 */
+.el-button--primary {
+    color: #606266;
+    background-color: rgba(77, 150, 228, 0.314);
+}

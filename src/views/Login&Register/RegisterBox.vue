@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-09-17 19:50:03
- * @LastEditTime: 2021-10-05 22:43:01
+ * @LastEditTime: 2021-11-07 19:46:00
  * @LastEditors: Please set LastEditors
  * @Description: 注册模块页面组件
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\Login&Register\RegisterBox.vue
@@ -77,13 +77,10 @@
 
 <script setup>
 import { ref, reactive } from 'vue'
-import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useSendCodeEffect } from '../../utils/verifyMail.js'
 import Vcode from "vue3-puzzle-vcode";
 import request from '../../api/index'
-
-const router = useRouter() 
 
 // 用户注册数据
 const user = reactive({})
@@ -170,11 +167,11 @@ const handleRegisterSubmit =  () => {
 }
 
 // 父子数据通信
-const props = defineProps({
+defineProps({
   model: Boolean
 })
 
-const emit = defineEmits(['update:mode'])
+defineEmits(['update:mode'])
 
 const { 
     computeTime,
@@ -187,17 +184,19 @@ const {
 
 <style lang="scss">
 @import "../../assets/style/variables.scss";
+@import "../../assets/style/mixins.scss";
 .registerBox{
     width: 4rem;
     padding: .4rem .2rem .03rem .2rem;
     box-sizing: border-box;
-    background: $base-bgColor;
-    box-shadow: 0 0 .08rem .02rem #eee;
-    border-radius: .1rem;
+    background: rgba(255, 255, 255, .15);
+    border-radius: .02rem;
+    position: relative;
     transition: all 0.5s ease;
     &__modelText{
         font-size: .18rem;
         font-weight: bold;
+        color: $base-fontColor;
         margin-bottom: .25rem;
         &__pwd {
             margin-right: .12rem;
@@ -207,11 +206,12 @@ const {
             cursor: pointer;
         }
         &__tips{
-            border-bottom: 2px solid black;
+            border-bottom: .02rem solid black;
         }
     }
     &__Input{
         &__requireButton{
+            color: #FFF;
             cursor: pointer;
         }
         &__registerButton{
@@ -228,5 +228,8 @@ const {
             cursor: pointer;
         }
     }
+}
+.registerBox::before {
+    @include filter_blur;
 }
 </style>

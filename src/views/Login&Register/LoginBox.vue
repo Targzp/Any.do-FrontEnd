@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-09-17 17:34:59
- * @LastEditTime: 2021-10-06 23:12:03
+ * @LastEditTime: 2021-11-11 10:40:09
  * @LastEditors: Please set LastEditors
  * @Description: 登录模块页面组件
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\Login&Register\LoginBox.vue
@@ -43,6 +43,7 @@
                             prefix-icon="el-icon-lock"
                             v-model="user.userPwd"
                             placeholder="请输入密码"
+                            @keyup.enter="handleLoginSubmit"
                         />
                     </el-form-item>
                 </div>
@@ -167,7 +168,7 @@ const handleLoginSubmit = () => {
                 if (res) {
                     ElMessage.success('登录成功')
                     store.commit('saveUserInfo', res)
-                    router.push({name: 'Home'})
+                    router.push({ name: 'Home' })
                 }
             } catch (error) {
                 // 当账户或密码输错超过三次则需进行人机验证
@@ -191,21 +192,23 @@ const {
 
 
 // 父子数据通信
-const props = defineProps({
+defineProps({
   mode: Boolean
 })
-const emit = defineEmits(['update:mode'])
+
+defineEmits(['update:mode'])
 </script>
 
 <style lang="scss">
 @import "../../assets/style/variables.scss";
+@import "../../assets/style/mixins.scss";
 .loginHeader {
     font-size: .16rem;
     font-weight: bold;
+    color: $base-fontColor;
     height: .6rem;
-    background: $base-bgColor;
-    border-radius: .1rem;
-    box-shadow: 0 0 .08rem .02rem #eee;
+    background: rgba(255, 255, 255, .15);
+    border-radius: .02rem;
     margin-bottom: .15rem;
     display: flex;
     justify-content: center;
@@ -216,17 +219,21 @@ const emit = defineEmits(['update:mode'])
         margin-right: .08rem;
     }
 }
+.loginHeader::before {
+    @include filter_blur;
+}
 .loginBox{
     width: 4rem;
     padding: .4rem .2rem 0 .2rem;
     box-sizing: border-box;
-    background: $base-bgColor;
-    box-shadow: 0 0 .08rem .02rem #eee;
-    border-radius: .1rem;
+    background: rgba(255, 255, 255, .2);
+    position: relative;
+    border-radius: .02rem;
     transition: all 0.5s ease;
     &__modelText{
         font-size: .18rem;
         font-weight: bold;
+        color: $base-fontColor;
         margin-bottom: .25rem;
         &__pwd {
             margin-right: .12rem;
@@ -241,6 +248,7 @@ const emit = defineEmits(['update:mode'])
     }
     &__Input{
         &__requireButton{
+            color: #FFF;
             cursor: pointer;
         }
         &__loginButton{
@@ -257,5 +265,8 @@ const emit = defineEmits(['update:mode'])
             cursor: pointer;
         }
     }
+}
+.loginBox::before {
+    @include filter_blur;
 }
 </style>

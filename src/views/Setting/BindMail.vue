@@ -1,7 +1,7 @@
 <!--
  * @Author: your name
  * @Date: 2021-09-22 20:53:10
- * @LastEditTime: 2021-10-07 00:23:31
+ * @LastEditTime: 2021-10-15 20:29:17
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\Setting\BindMail.vue
@@ -13,7 +13,8 @@
             :model="mail"
             ref="mailForm"
             :rules="rules"
-            label-width="90px">
+            label-width="90px"
+            :hide-required-asterisk="true">
             <el-form-item label="新邮箱:" prop="userMail">
                 <el-input v-model="mail.userMail"/>
             </el-form-item>
@@ -119,6 +120,7 @@ const {
     &__mailForm {
         
         &__requireButton {
+            color: #909399;
             cursor: pointer;
         }
 

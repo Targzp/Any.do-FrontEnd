@@ -1,7 +1,7 @@
 /*
  * @Author: 胡晨明
  * @Date: 2021-09-18 14:25:16
- * @LastEditTime: 2021-10-02 23:26:11
+ * @LastEditTime: 2021-11-02 18:08:07
  * @LastEditors: Please set LastEditors
  * @Description: 接口汇总
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\api\index.js
@@ -109,5 +109,77 @@ export default {
             data: params,
             mock: false
         })
+    },
+    // 上传用户反馈接口
+    postUserAdvice(params) {
+        return request({
+            method: 'post',
+            url: '/feedback',
+            data: params,
+            mock: false
+        })
+    },
+    // 获取用户自定义设置数据接口
+    getCustomSettings() {
+        return request({
+            method: 'get',
+            url: '/customsettings/usercustomsettings',
+            data: {},
+            mock: false
+        })
+    },
+    // 提交用户自定义设置数据接口
+    postCustomSettings(params) {
+        return request({
+            method: 'post',
+            url: '/customsettings/postcustomsettings',
+            data: params,
+            mock: false
+        })
+    },
+    // 获取用户功能开启列表接口
+    getUserFunctions() {
+        return request({
+            method: 'get',
+            url: '/customsettings/userfunctions',
+            data: {},
+            mock: false
+        })
+    },
+    // 获取用户清单列表数据接口
+    getUserLists() {
+        return request({
+            method: 'get',
+            url: '/lists/userlists',
+            data: {},
+            mock: false
+        })
+    },
+    // 提交用户添加清单数据接口
+    postUserAddList(params) {
+        return request({
+            method: 'post',
+            url: '/lists/addlist',
+            data: params,
+            mock: false
+        })
+    },
+    // 用户删除清单接口
+    postUserDeleteList(params) {
+      return request({
+        method: 'post',
+        url: '/lists/deletelist',
+        data: params,
+        mock: false
+      })
+    },
+    // 用户清单名称修改接口
+    postUserEditList(params) {
+      return request({
+        method: 'post',
+        url: '/lists/editlist',
+        data: params,
+        mock: false
+      })
     }
 }

@@ -1,7 +1,7 @@
 /*
  * @Author: 胡晨明
  * @Date: 2021-08-15 21:12:02
- * @LastEditTime: 2021-10-05 17:58:26
+ * @LastEditTime: 2021-10-28 15:08:03
  * @LastEditors: Please set LastEditors
  * @Description: 前端路由配置
  * @FilePath: \bloge:\Vue_store\manager-fe\src\router\index.js
@@ -12,15 +12,47 @@ import {
 } from 'vue-router'
 import storage from '../utils/storage'
 import { ElMessage } from 'element-plus'
-import Home from '../views/Home.vue'
+import Home from '../views/Home/Home.vue'
   
-const routes = [{
+const routes = [
+  {
     name: 'Home',
     path: '/',
     meta: {
       title: '首页'
     },
     component: Home,
+    redirect: '/list/all/tasks',
+    children: [
+      {
+        name: 'List',
+        path: 'list',
+        meta: {
+          title: '清单'
+        },
+        component: () => import('../views/List/List.vue'),
+        children: [
+          {
+            name: 'Tasks',
+            path: ':listId/tasks',
+            meta: {
+              title: '清单任务'
+            },
+            component: () => import('../views/List/Tasks.vue'),
+            children: [
+              {
+                name: 'TaskDetail',
+                path: ':taskId',
+                meta: {
+                  title: '任务描述'
+                },
+                component: () => import('../views/List/TaskDetail.vue')
+              }
+            ]
+          }
+        ]
+      }
+    ]
   },
   {
     name: 'Login',
@@ -70,6 +102,14 @@ const routes = [{
         component: () => import('../views/Setting/BindMail.vue'),
       }
     ]
+  },
+  {
+    name: 'CustomSetting',
+    path: '/customSetting',
+    meta: {
+      title: '自定义功能设置'
+    },
+    component: () => import('../views/CustomSetting/CustomSetting.vue'),
   },
   {
     name: '404',

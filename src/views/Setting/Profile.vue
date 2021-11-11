@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-09-22 20:53:41
- * @LastEditTime: 2021-10-07 00:01:08
+ * @LastEditTime: 2021-11-07 19:49:26
  * @LastEditors: Please set LastEditors
  * @Description: 设置基本账户信息界面组件
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\Setting\Profile.vue
@@ -13,7 +13,8 @@
             :model="user"
             ref="userForm"
             :rules="rules"
-            label-width="100px">
+            label-width="100px"
+            :hide-required-asterisk="true">
             <div class="profile__avatar">
                 <el-form-item label="头像：">
                     <el-upload
@@ -74,6 +75,7 @@
             :close-on-click-modal="false"
             :close-on-press-escape="false"
             :show-close="false"
+            :append-to-body="true"
         >
             <el-form
                 :model="mailCode"
@@ -85,7 +87,7 @@
                     <span>{{user.userMail}}</span>
                 </el-form-item>
                 <el-form-item label="验证码:" prop="userCode">
-                    <el-input v-model="mailCode.userCode">
+                    <el-input v-model="mailCode.userCode" class="profile__codeInput">
                         <template #suffix>
                             <div class="profile__requireButton" @click="handleIsMailEmpty">
                                 {{computeTime>0?`${computeTime}s`:'获取验证码'}}
@@ -95,48 +97,47 @@
                 </el-form-item>
                 <div>
                     <el-form-item class="profile__codeConfirm">
-                        <el-button plain @click="mailTrigger = false">取消</el-button>
-                        <el-button type="primary" @click="handleVerifyCode">确定</el-button>
+                        <el-button @click="mailTrigger = false">取消</el-button>
+                        <el-button @click="handleVerifyCode">确定</el-button>
                     </el-form-item>
                 </div>
             </el-form>
             <Vcode :show="isShow" @success="handleSendCode" @close="onClose"/>
         </el-dialog>
         <!-- 裁剪框 -->
-        <teleport to='body'>
-            <el-dialog
-                :width="500"
-                top="10vh"
-                center
-                v-model="trigger"
-                >
-                <VuePictureCropper
-                    :boxStyle="{
-                        width: '80%',
-                        height: '80%',
-                        backgroundColor: '#f8f8f8',
-                        margin: 'auto',
-                    }"
-                    :img="pic"
-                    :options="{
-                        viewMode: 1,
-                        aspectRatio: 4 / 4,
-                        dragMode: 'crop',
-                    }"
-                />
-                <div class="imgCropper__button">
-                    <el-button @click="trigger = false">取消</el-button>
-                    <el-button @click="clear">清除</el-button>
-                    <el-button @click="reset">重置</el-button>
-                    <el-button type="primary" @click="postImage">裁切</el-button>
-                </div>
-            </el-dialog>
-        </teleport>
+        <el-dialog
+            :width="500"
+            top="10vh"
+            center
+            v-model="trigger"
+            :append-to-body="true"
+            >
+            <VuePictureCropper
+                :boxStyle="{
+                    width: '80%',
+                    height: '80%',
+                    backgroundColor: '#f8f8f8',
+                    margin: 'auto',
+                }"
+                :img="pic"
+                :options="{
+                    viewMode: 1,
+                    aspectRatio: 4 / 4,
+                    dragMode: 'crop',
+                }"
+            />
+            <div class="imgCropper__button">
+                <el-button @click="trigger = false">取消</el-button>
+                <el-button @click="clear">清除</el-button>
+                <el-button @click="reset">重置</el-button>
+                <el-button @click="postImage">裁切</el-button>
+            </div>
+        </el-dialog>
     </div>
 </template>
 
 <script setup>
-import { ref, reactive, toRefs, computed } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
 import config from '../../config/index'
@@ -149,6 +150,7 @@ import { useSendCodeEffect } from '../../utils/verifyMail.js'
 
 // 状态管理仓库
 const store = useStore()
+const { userInfo } = store.state.users
 
 // 路由
 const router = useRouter()
@@ -158,12 +160,14 @@ const user = reactive({})
 
 // 图片路径
 const avatar = computed(() => {
-    const { userAvatar } = toRefs(store.state.userInfo)
-    if (userAvatar && userAvatar.value !== ' ') {
-        return `http://192.168.105.5:${config.port}/${userAvatar.value}`
-    } else {
-        return ' '
-    }
+    try {
+        const { userAvatar } = userInfo
+        if (userAvatar && userAvatar !== ' ') {
+            return `http://localhost:${config.port}/${userAvatar}`    /* TODO:上线后可更改为相对路径 */
+        } else {
+            return ' '
+        }
+    } catch (error) {}
 })
 
 // 个人信息表单对象
@@ -203,11 +207,11 @@ const trigger = ref(false)
 
 // 上传之前钩子函数
 const beforeAvatarUpload = (file) => {
-    const isJPG = file.type === 'image/jpeg'
+    const isCorrect = file.type === 'image/jpeg' || file.type === 'image/png'
     const isLt2M = file.size / 1024 / 1024 < 2
 
-    if (!isJPG) {
-        ElMessage.error('请上传JPG格式的图片！')
+    if (!isCorrect) {
+        ElMessage.error('请上传JPG格式或PNG格式的图片！')
         return false
     }
     if (!isLt2M) {
@@ -341,7 +345,7 @@ const {
         let res = await request.getProfile()
         if (res) {
             store.commit('setUserProfile', res)
-            Object.assign(user, store.state.userInfo)
+            Object.assign(user, userInfo)
         }
     } catch (error) {
         console.log(`${error}`)
@@ -351,6 +355,7 @@ const {
 </script>
 
 <style lang="scss">
+@import "../../assets/style/variables.scss";
 .profile{
     &__avatar{
         &__upload{
@@ -358,7 +363,7 @@ const {
             width: .7rem;
             height: .7rem;
             font-size: .25rem;
-            border: .01rem solid #ccc;
+            border: .01rem solid #F2F6FC;
             border-radius: .06rem;
             .el-icon-plus{
                 color: #ccc;
@@ -378,34 +383,37 @@ const {
     }
 
     &__requireButton {
-            cursor: pointer;
+        color: #909399;
+        cursor: pointer;
     }
 
     &__codeConfirm {
         margin-left: -.08rem;
+
+        .el-button--default {
+            background-color: #F2F6FC;
+        }
     }
 
     .el-input{
         width: 2rem;
     }
 
-    .el-dialog__header {
-        text-align: left;
-        font-size: .12rem;
+    &__codeInput {
+        background-color: #F2F6FC;
     }
 
-    .el-dialog__body {
-        padding-top: .08rem;
-        padding-bottom: .05rem;
-    }
-
-    .el-overlay {
-        z-index: 998 !important;
+    .el-icon-plus:before {
+        color: #F2F6FC;
     }
 }
-
 .imgCropper__button{
     margin-top: .2rem;
+    margin-bottom: .15rem;
     text-align: center;
+
+    .el-button--default {
+        background-color: #F2F6FC;
+    }
 }
 </style>

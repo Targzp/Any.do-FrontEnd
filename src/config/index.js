@@ -1,7 +1,7 @@
 /*
  * @Author: 胡晨明
  * @Date: 2021-09-15 23:18:40
- * @LastEditTime: 2021-09-18 14:33:17
+ * @LastEditTime: 2021-10-15 23:21:56
  * @LastEditors: Please set LastEditors
  * @Description: 环境配置封装
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\config\config.js
@@ -9,8 +9,7 @@
 /**
  * @description: 环境配置封装
  */
- const env =
- import.meta.env.MODE || 'prod'
+const env = import.meta.env.MODE || 'prod'
 const EnvConfig = {
  dev: {
    baseApi: '/api',
@@ -26,8 +25,8 @@ const EnvConfig = {
  }
 }
 export default {
- env: env,
- port: 3000,
- namespace: 'anydo',
- ...EnvConfig[env]
+  env: env,
+  port: 3000,
+  namespace: 'anydo',
+  ...EnvConfig[env]
 }
