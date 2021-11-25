@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-10-20 16:11:59
- * @LastEditTime: 2021-10-28 21:02:59
+ * @LastEditTime: 2021-11-21 23:31:31
  * @LastEditors: Please set LastEditors
  * @Description: 自定义设置主要设置界面组件
  * @FilePath: \Node.js_storee:\毕设项目\Anydo-app\src\views\CustomSetting\CustomMain.vue
@@ -50,9 +50,9 @@
                         class="customMain__inputWidth"
                         v-model="timeAndDate.firstDayOfWeek"
                     >
-                        <el-option value="1" label="周一"></el-option>
-                        <el-option value="6" label="周六"></el-option>
-                        <el-option value="7" label="周日"></el-option>
+                        <el-option value="2" label="周一"></el-option>
+                        <el-option value="7" label="周六"></el-option>
+                        <el-option value="1" label="周日"></el-option>
                     </el-select>
                 </div>
             </div>
@@ -146,7 +146,7 @@
                         v-model="taskDefault.defaultPriority"
                     >
                         <el-option value="low" label="低"></el-option>
-                        <el-option value="min" label="中"></el-option>
+                        <el-option value="mid" label="中"></el-option>
                         <el-option value="high" label="高"></el-option>
                     </el-select>
                 </div>

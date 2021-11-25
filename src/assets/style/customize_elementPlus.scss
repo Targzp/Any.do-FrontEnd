@@ -66,3 +66,16 @@
     color: #606266;
     background-color: rgba(77, 150, 228, 0.314);
 }
+
+/* 重置日期选择器 */
+.el-date-picker {
+  width: 270px;
+}
+
+.el-date-picker .el-picker-panel__content, .el-date-picker__header {
+  width: 260px;
+}
+
+.el-date-picker__header, .el-picker-panel__content {
+  margin: 5px;
+}

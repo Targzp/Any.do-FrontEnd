@@ -146,6 +146,15 @@ export default {
             mock: false
         })
     },
+    // 用户任务设定默认值获取接口
+    getUserTaskDefault() {
+      return request({
+        method: 'get',
+        url: '/customsettings/usertaskdefault',
+        data: {},
+        mock: false
+      })
+    },
     // 获取用户清单列表数据接口
     getUserLists() {
         return request({

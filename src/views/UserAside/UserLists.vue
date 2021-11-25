@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-10-26 17:00:23
- * @LastEditTime: 2021-11-11 15:46:39
+ * @LastEditTime: 2021-11-16 21:40:05
  * @LastEditors: Please set LastEditors
  * @Description: 用户清单界面组件
  * @FilePath: \Node.js_storee:\毕设项目\Anydo-app\src\views\UserAside\UserLists.vue
@@ -176,10 +176,6 @@ const store = useStore()
 
 // 清单列表
 const userLists = store.state.lists.userLists
-
-// watch(userLists, (val) => {
-//   console.log(val)
-// })
 
 // 清单显示状态
 const showList = ref(true)

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-10-28 15:15:44
- * @LastEditTime: 2021-11-11 20:39:50
+ * @LastEditTime: 2021-11-16 21:40:56
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \Node.js_storee:\毕设项目\Anydo-app\src\store\modules\userLists.js
@@ -29,7 +29,6 @@ const mutations = {
     } else {
       state.userLists.splice(0, state.userLists.length, ...lists)
     }
-    console.log(state.userLists)
     storage.setItem('userLists', state.userLists)
   },
   /**
