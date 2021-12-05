@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-10-26 17:00:23
- * @LastEditTime: 2021-11-16 21:40:05
+ * @LastEditTime: 2021-12-02 14:47:25
  * @LastEditors: Please set LastEditors
  * @Description: 用户清单界面组件
  * @FilePath: \Node.js_storee:\毕设项目\Anydo-app\src\views\UserAside\UserLists.vue
@@ -36,7 +36,7 @@
                         <div 
                             class="UserLists__everyList"
                             v-show="showList"
-                            @click.right.prevent="handleClick"
+                            @click="() => handleListClick(element.listId)"
                         >
                             <div>
                                 <span class="UserLists__pattern">{{element.listFlag}}</span>
@@ -47,6 +47,7 @@
                 </draggable>
             </template>
         </listsColumn>
+        <!-- 添加清单模态框 -->
         <el-dialog
             title="添加清单"
             :width="400"
@@ -101,6 +102,7 @@
                 @emojiClick="handleEmojiClick"
             />
         </el-dialog>
+        <!-- 管理清单模态框 -->
         <el-dialog
             title="管理清单"
             :width="400"
@@ -163,35 +165,45 @@
 <script setup>
 import { ref, reactive, nextTick } from 'vue'
 import { useStore } from 'vuex'
+import { useRouter } from 'vue-router'
 import draggable from 'vuedraggable'
 import request from '../../api/index'
 import listsColumn from '../../components/listsColumn.vue'
 import { VuemojiPicker } from 'vuemoji-picker'
 import VuemojiPickerStyle from '../../utils/emojiStyle'
 import { ElMessage } from 'element-plus'
-import _ from 'lodash'
 
 // 状态管理仓库
 const store = useStore()
+// 路由
+const router = useRouter()
 
 // 清单列表
 const userLists = store.state.lists.userLists
+
+// 清单拖拽标记
+const dragging = ref(true)
 
 // 清单显示状态
 const showList = ref(true)
 
 // 获取清单列表
 ;(async () => {
-    // 只有本地没有用户清单时再去后端请求
-    if (userLists.length === 0) {
-        try {
-            let res = await request.getUserLists()
-            store.commit('saveUserLists', res.allLists)
-        } catch (error) {
-            console.log(`${error}`)
-        }
+  // 只有本地没有用户清单时再去后端请求
+  if (userLists.length === 0) {
+    try {
+      let res = await request.getUserLists()
+      store.commit('saveUserLists', res.allLists)
+    } catch (error) {
+      console.log(`${error}`)
     }
+  }
 })()
+
+// 点击相应清单查看清单任务详情
+const handleListClick = (listId) => {
+  router.push({ path: `/list/${listId}/tasks` })
+}
 
 // 添加清单弹框开关状态
 const addListTrigger = ref(false)
@@ -201,13 +213,13 @@ const emojiTrigger = ref(false)
 
 // 打开添加清单弹框
 const handleAddListOpen = () => {
-    addListTrigger.value = true
+  addListTrigger.value = true
 }
 
 // 添加清单表单数据对象
 const addListData = reactive({
-    listName: '',
-    listFlag: ''
+  listName: '',
+  listFlag: ''
 })
 
 // 添加清单表单对象
@@ -215,25 +227,25 @@ const addListForm = ref(null)
 
 // 添加清单表单校验对象
 const addListRules = {
-    listName: [
-        {
-            required: true,
-            message: '请输入清单名称'
-        }
-    ]
+  listName: [
+    {
+      required: true,
+      message: '请输入清单名称'
+    }
+  ]
 }
 
 // 选择表情逻辑
 const handleEmojiClick = (detail) => {
-    const emojiUnicode = detail.emoji.unicode
-    addListData.listFlag = emojiUnicode
+  const emojiUnicode = detail.emoji.unicode
+  addListData.listFlag = emojiUnicode
 }
 
 // 添加清单表单重置并且关闭
 const handleAddListFromResetAndClose = () => {
-    addListForm.value.resetFields()
-    addListData.listFlag = ''
-    addListTrigger.value = false
+  addListForm.value.resetFields()
+  addListData.listFlag = ''
+  addListTrigger.value = false
 }
 
 // 添加清单提交逻辑
@@ -257,7 +269,7 @@ const manageListTrigger = ref(false)
 
 // 打开管理清单弹框
 const handleManageListOpen = () => {
-    manageListTrigger.value = true
+  manageListTrigger.value = true
 }
 
 // 清单标题纯显示/可输入状态
@@ -302,6 +314,9 @@ const handleDeleteList = async (list, index) => {
   try {
     await request.postUserDeleteList({ listId: list.listId })
     store.commit('deleteUserList', index)
+    if (userLists.length === 0) {
+      router.push({ path: `/list/all/tasks` })
+    }
     ElMessage.success('删除成功')
   } catch (error) {
     console.log(`${error}`)

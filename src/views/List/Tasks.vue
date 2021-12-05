@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-10-12 16:12:01
- * @LastEditTime: 2021-11-25 17:39:12
+ * @LastEditTime: 2021-12-04 21:27:00
  * @LastEditors: Please set LastEditors
  * @Description: 清单任务组件
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\List\Tasks.vue
@@ -13,7 +13,7 @@
       <div class="Tasks__list__header">
         <div>
           <span class="Tasks__list__header__shrink"><i class="el-icon-s-fold"></i></span>
-          <span class="Tasks__list__header__title">📦 购物清单</span>
+          <span class="Tasks__list__header__title">{{selectedList.desc}}</span>
         </div>
         <span class="iconfont Tasks__list__header__other">&#xe618;</span>
       </div>
@@ -21,9 +21,9 @@
       <div class="Tasks__list__addTask">
         <!-- 新任务输入框 -->
         <el-input
-          v-model="newTask.taskName"
+          v-model="newTask.taskInfo"
           class="Tasks__list__addTask__inputTask"
-          placeholder='添加任`务至 "📦 购物清单"'
+          :placeholder="'添加任务至 ' + selectedList.desc"
         >
           <template #suffix>
             <div class="Tasks__list__addTask__taskIcons">
@@ -128,7 +128,7 @@
               type="info"
               plain
               class="Tasks__list__addTask__clear"
-              @click="handleCleanTaskSetting"
+              @click="() => handleCleanTaskSetting(false)"
             >清除</el-button>
             <el-button
               type="primary"
@@ -161,8 +161,11 @@
         <!-- 新增任务添加按钮 -->
         <el-button
           class="Tasks__list__addTask__addBtn"
+          @click="handleAddTask"
         >添加</el-button>
       </div>
+      <!-- 任务列表区域 -->
+      <TaskLists :listId="route.params.listId"/>
     </div>
     <!-- 任务细节展示区域 -->
     <div class="Tasks__detail">
@@ -179,10 +182,69 @@
 </template>
 
 <script setup>
+import { useRoute } from 'vue-router'
+import { useStore } from 'vuex'
 import request from '../../api/index'
 import _ from 'lodash'
 import dayjs from 'dayjs'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import TaskLists from './TasksLists.vue'
+
+// 状态管理仓库
+const store = useStore()
+
+// 当前路由对象,获取 listId
+const route = useRoute()
+
+// 清单列表
+const userLists = store.state.lists.userLists
+
+//! 组件内部通用状态
+// 新增任务数据
+const newTask = reactive({
+  taskInfo: '',   // 新增任务信息
+  taskDate: '',  // 新增任务默认日期
+  taskTime: '',   // 新增任务默认时间
+  startTaskDate: '',  // 新增任务时间段模式开始日期
+  startTaskTime: '',          // 新增任务时间段模式开始时间
+  endTaskDate: '',            // 新增任务时间段模式结束日期
+  endTaskTime: '',            // 新增任务时间段模式结束时间
+  notify: '',      // 新增任务提醒设置
+  taskPriority: '', // 新增任务默认值
+  doneFlag: 0       // 新增任务完成标志
+})
+
+// 任务默认值
+const taskDefaultData = reactive({})
+
+// 时间和日期默认设定
+const timeAndDateData = reactive({})
+
+//! 获取当前用户选择清单名和flag
+const selectedList = reactive({
+  desc: ''
+})
+watch(
+  () => route.params.listId, 
+  (val) => {
+    // listId 一旦变化当前输入任务进行同步清空
+    if (newTask.taskInfo) {
+      newTask.taskInfo = ''
+    }
+    // 如果 listId 为 all
+    if (val === 'all') {
+      selectedList.desc = '所有'
+      return
+    }
+    // 根据 listId 在清单中寻找对应清单
+    userLists.forEach((list) => {
+      if (list.listId === parseInt(val)) {
+        selectedList.desc = `${list.listFlag} ${list.listName}`
+      }
+    })
+  },
+  { immediate: true }
+)
 
 // 日历装饰器对象
 const calendarAttributes = [
@@ -196,26 +258,6 @@ const calendarAttributes = [
   }
 ]
 
-//! 组件内部通用状态
-// 新增任务数据
-const newTask = reactive({
-  taskName: '',   // 新增任务名
-  taskDate: '',  // 新增任务默认日期
-  taskTime: '',   // 新增任务默认时间
-  startTaskDate: '',  // 新增任务时间段模式开始日期
-  startTaskTime: '',          // 新增任务时间段模式开始时间
-  endTaskDate: '',            // 新增任务时间段模式结束日期
-  endTaskTime: '',            // 新增任务时间段模式结束时间
-  notify: '',      // 新增任务提醒设置
-  taskPriority: '' // 新增任务默认值
-})
-
-// 任务默认值
-const taskDefaultData = reactive({})
-
-// 时间和日期默认设定
-const timeAndDateData = reactive({})
-
 //! 新增任务展示逻辑区域
 // 新增任务设置展开/关闭状态变量
 const showTaskSetting = ref(false)
@@ -225,7 +267,7 @@ const handleShowTaskSetting = (save) => {
   showTaskSetting.value = !showTaskSetting.value
   // 如果是点击模态关闭，清空任务设置
   if (!save && !showTaskSetting.value) {
-    handleCleanTaskSetting()
+    handleCleanTaskSetting(false)
   }
 }
 
@@ -360,18 +402,57 @@ const handleSelectQuantumTime = () => {
   }
 }
 
-//! 清楚任务设定值逻辑区域
-// 清除任务值设定
-const handleCleanTaskSetting = () => {
-  // 将任务设定值进行合并清除
+//! 清除/重置任务设定值逻辑区域
+// 清除/重置任务值设定
+const handleCleanTaskSetting = (reset) => {
+  // 将任务设定值进行合并清除/重置
   Object.assign(newTask, {
+    taskInfo: reset?'':newTask.taskInfo,
     taskDate: '',
     taskTime: '',
     startTaskDate: '',
     startTaskTime: '',
     endTaskDate: '',
     endTaskTime: '',
-    notify: ''
+    notify: reset?taskDefaultData.defaultNotify:''
+  })
+}
+
+//! 添加任务逻辑区域
+const handleAddTask = () => {
+  // 获取当前所选清单清单名
+  const listName = selectedList.desc.split(' ')[1]
+
+  // 检查是否输入任务
+  if (!newTask.taskInfo) {
+    ElMessage.warning('请输入任务！')
+    return
+  }
+
+  ElMessageBox.confirm(`任务将被添加至${listName}`, '确认框', {
+    cancelButtonText: '取消',
+    confirmButtonText: '确认',
+    type: 'warning',
+  })
+  .then(async () => {
+    const listId = route.params.listId
+    // 将日期时间转换为时间戳格式
+    const task = _.cloneDeep(newTask)
+    for(let key in task) {
+      if (task[key] instanceof Date) {
+        task[key] = task[key].valueOf()
+      }
+    }
+    const params = { listId, task }
+    const res = await request.postUserAddTask(params)
+
+    store.dispatch('saveUserTaskDB', { listId, task: res })
+    ElMessage.success('添加成功')
+    handleCleanTaskSetting(true)  // 重置任务设定
+  })
+  .catch((err) => {
+    console.log(err)
+    return
   })
 }
 
@@ -383,8 +464,8 @@ const handleCleanTaskSetting = () => {
     const { taskDefault, timeAndDate } = res
     Object.assign(taskDefaultData, taskDefault)
     newTask.notify = taskDefaultData.defaultNotify  // 将默认提醒进行赋值
-    selectedPriority.value = taskDefault.defaultPriority  // 将默认优先级进行选中
-    newTask.taskPriority = taskDefault.defaultPriority    // 将默认优先级进行赋值
+    selectedPriority.value = taskDefaultData.defaultPriority  // 将默认优先级进行选中
+    newTask.taskPriority = taskDefaultData.defaultPriority    // 将默认优先级进行赋值
     Object.assign(timeAndDateData, timeAndDate)
   } catch (error) {
     console.log(`${error}`)
@@ -402,14 +483,16 @@ const handleCleanTaskSetting = () => {
   &__list {
     flex: 3 1 auto;
     margin: .15rem 0;
-    padding: 0 .15rem;
     border-right: .01rem solid rgba(223, 223, 223, 0.644);
+    display: flex;
+    flex-flow: column;
 
     &__header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       font-size: .23rem;
+      margin: 0 .15rem;
       color: $base-fontColor;
 
       &__shrink {
@@ -422,7 +505,7 @@ const handleCleanTaskSetting = () => {
     &__addTask {
       display: flex;
       align-items: center;
-      margin-top: .1rem;
+      margin: .1rem .15rem 0 .15rem;
       position: relative;
 
       &__taskIcons {

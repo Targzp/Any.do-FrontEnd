@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-10-20 16:11:59
- * @LastEditTime: 2021-11-21 23:31:31
+ * @LastEditTime: 2021-12-03 10:13:15
  * @LastEditors: Please set LastEditors
  * @Description: 自定义设置主要设置界面组件
  * @FilePath: \Node.js_storee:\毕设项目\Anydo-app\src\views\CustomSetting\CustomMain.vue
@@ -150,16 +150,18 @@
                         <el-option value="high" label="高"></el-option>
                     </el-select>
                 </div>
-                <!-- TODO：需做完清单功能才能获取到清单 -->
                 <div class="customMain__item-flex">
                     <span class="customMain__desc">默认添加到清单</span>
                     <el-select
                         class="customMain__inputWidth"
-                        v-model="taskDefault.defaultList"
+                        v-model.number="taskDefault.defaultList"
                     >
-                        <el-option value="100000" label="收集箱"></el-option>
-                        <el-option value="100001" label="个人备忘"></el-option>
-                        <el-option value="100002" label="购物清单"></el-option>
+                        <el-option
+                          v-for="list in userLists"
+                          :key="list.listId"
+                          :value="list.listId"
+                          :label="list.listName" 
+                        />
                     </el-select>
                 </div>
             </div>
@@ -181,7 +183,10 @@ import request from '../../api/index'
 
 // 获取 customSetting 状态管理仓库
 const store = useStore()
-const { customSetting } = store.state
+const customSetting = store.state.customSetting
+
+// 获取清单列表
+const userLists = store.state.lists.userLists
 
 // 功能模块循环渲染集合
 const functionModels = [
@@ -227,7 +232,7 @@ const customSettings = reactive({
     taskDefault: {
         defaultDate: "",
         defaultDateMode: "date",
-        defaultNotify: "onTime",
+        defaultNotify: "0",
         defaultPriority: "",
         defaultList: ""
     }

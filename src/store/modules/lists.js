@@ -1,9 +1,9 @@
 /*
- * @Author: your name
+ * @Author: 胡晨明
  * @Date: 2021-10-28 15:15:44
- * @LastEditTime: 2021-11-16 21:40:56
+ * @LastEditTime: 2021-12-03 10:20:19
  * @LastEditors: Please set LastEditors
- * @Description: In User Settings Edit
+ * @Description: 用户清单状态管理
  * @FilePath: \Node.js_storee:\毕设项目\Anydo-app\src\store\modules\userLists.js
  */
 import storage from '../../utils/storage'
@@ -27,6 +27,7 @@ const mutations = {
     if (state.userLists.length === 0) {
       state.userLists.push(...lists)
     } else {
+      console.log(lists)
       state.userLists.splice(0, state.userLists.length, ...lists)
     }
     storage.setItem('userLists', state.userLists)

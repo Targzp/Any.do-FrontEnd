@@ -14,16 +14,7 @@
         <div class="UserAside__all">
             <el-scrollbar>
                 <!-- 所有和今天清单整理列表 -->
-                <div class="UserAside__fastList">
-                    <div class="UserAside__fastList__all">
-                        <span class="iconfont">&#xe835;</span>
-                        <span>所有</span>
-                    </div>
-                    <div class="UserAside__fastList__today">
-                        <span class="iconfont">&#xe654;</span>
-                        <span>今天</span>
-                    </div>
-                </div>
+                <UserFastList />
                 <!-- 用户清单列表 -->
                 <UserLists />
                 <!-- 已完成和垃圾桶 -->
@@ -48,6 +39,7 @@
 import UserAddition from './UserAddition.vue'
 import UserLists from './UserLists.vue'
 import UserFunction from './UserFunctions.vue'
+import UserFastList from './UserFastList.vue'
 </script>
 
 <style lang="scss">
@@ -67,27 +59,6 @@ import UserFunction from './UserFunctions.vue'
 
     &__all {
         overflow: auto;
-    }
-
-    &__fastList {
-        @include listPieceStyle;
-
-        &__all, &__today {
-            padding: .1rem;
-            cursor: pointer;
-        }
-
-        span[class*="iconfont"] {
-            display: inline-block;
-            vertical-align: middle;
-            font-size: .2rem;
-            margin-right: .15rem;
-        }
-
-        span[class*="iconfont"] + span {
-            color: $base-fontColor;
-            vertical-align: middle;
-        }
     }
 
     &__listRecovery {

@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-09-17 17:34:59
- * @LastEditTime: 2021-11-11 10:40:09
+ * @LastEditTime: 2021-11-28 23:29:13
  * @LastEditors: Please set LastEditors
  * @Description: 登录模块页面组件
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\Login&Register\LoginBox.vue
@@ -156,6 +156,11 @@ const handleChangeModel = (tip) => {
     } else {
         loginModel.value = false
     }
+
+    // 切换登录模式时删除之前模式的值
+    for (key in user) {
+      user.hasOwnProperty(key) && delete user[key]
+    }
 }
 
 // 用户登录数据提交
@@ -189,7 +194,6 @@ const {
     handleIsMailEmpty,
     handleSendCode
 } = useSendCodeEffect(user)
-
 
 // 父子数据通信
 defineProps({

@@ -7,16 +7,18 @@
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\store\index.js
  */
 import {
-    createStore
+  createStore
 } from 'vuex'
 import users from './modules/users'
 import customSetting from './modules/customSetting'
 import lists from './modules/lists'
+import tasks from './modules/tasks'
 
 export default createStore({
-    modules: {
-        users,
-        customSetting,
-        lists
-    }
+  modules: {
+    users,
+    customSetting,
+    lists,
+    tasks
+  }
 })

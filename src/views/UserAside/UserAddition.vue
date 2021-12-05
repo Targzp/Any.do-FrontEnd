@@ -1,9 +1,9 @@
 <!--
- * @Author: your name
+ * @Author: 胡晨明
  * @Date: 2021-10-30 15:38:26
  * @LastEditTime: 2021-11-11 16:20:16
  * @LastEditors: Please set LastEditors
- * @Description: In User Settings Edit
+ * @Description: 用户附加功能区域组件
  * @FilePath: \Node.js_storee:\毕设项目\Anydo-app\src\views\UserAside\UserAddition.vue
 -->
 <template>
@@ -101,6 +101,7 @@ const avatar = computed(() => {
     } catch (error) {}
 })
 
+//TODO 同步问题暂时搁置，暂时先从后端获取
 // 同步用户清单
 const handleSyncLists = async () => {
   try {

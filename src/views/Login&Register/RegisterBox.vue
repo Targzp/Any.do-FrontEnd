@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-09-17 19:50:03
- * @LastEditTime: 2021-11-07 19:46:00
+ * @LastEditTime: 2021-12-03 10:09:11
  * @LastEditors: Please set LastEditors
  * @Description: 注册模块页面组件
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\Login&Register\RegisterBox.vue
@@ -167,11 +167,11 @@ const handleRegisterSubmit =  () => {
 }
 
 // 父子数据通信
-defineProps({
+const props = defineProps({
   model: Boolean
 })
 
-defineEmits(['update:mode'])
+const emit = defineEmits(['update:mode'])
 
 const { 
     computeTime,
