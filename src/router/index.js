@@ -1,7 +1,7 @@
 /*
  * @Author: 胡晨明
  * @Date: 2021-08-15 21:12:02
- * @LastEditTime: 2021-11-26 23:26:26
+ * @LastEditTime: 2021-12-06 18:01:38
  * @LastEditors: Please set LastEditors
  * @Description: 前端路由配置
  * @FilePath: \bloge:\Vue_store\manager-fe\src\router\index.js
@@ -22,7 +22,7 @@ const routes = [
       title: '首页'
     },
     component: Home,
-    redirect: '/list/all/tasks',
+    redirect: '/list/0/tasks',
     children: [
       {
         name: 'List',
@@ -132,7 +132,7 @@ router.beforeEach((to, from, next) => {
   const userInfo = storage.getItem('userInfo')
   // 检查路由是否存在
   if (router.hasRoute(name)) {
-    const isLogin = (name === 'Login');
+    const isLogin = (name === 'Login')
     if ((userInfo && Object.keys(userInfo).length) || isLogin) {
       next()
     } else {

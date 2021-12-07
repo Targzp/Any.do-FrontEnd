@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-10-30 15:38:26
- * @LastEditTime: 2021-11-11 16:20:16
+ * @LastEditTime: 2021-12-05 20:22:52
  * @LastEditors: Please set LastEditors
  * @Description: 用户附加功能区域组件
  * @FilePath: \Node.js_storee:\毕设项目\Anydo-app\src\views\UserAside\UserAddition.vue
@@ -32,6 +32,7 @@
         <div class="UserAddition__icons">
             <el-tooltip
                 v-for="item in additionFunctions"
+                :key="item.iconCode"
                 effect="light"
                 placement="bottom"
                 :content="item.content"
@@ -75,7 +76,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, toRefs, computed } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import { ElMessageBox, ElMessage } from 'element-plus'
@@ -91,14 +92,12 @@ const router = useRouter()
 
 // 图片路径
 const avatar = computed(() => {
-    try {
-        const { userAvatar } = userInfo
-        if (userAvatar && userAvatar !== ' ') {
-            return `http://localhost:${config.port}/${userAvatar}`    /* TODO:上线后可更改为相对路径 */
-        } else {
-            return ' '
-        }
-    } catch (error) {}
+  const { userAvatar } = userInfo
+  if (userAvatar && userAvatar !== ' ') {
+    return `http://localhost:${config.port}/${userAvatar}`    /* TODO:上线后可更改为相对路径 */
+  } else {
+    return ' '
+  }
 })
 
 //TODO 同步问题暂时搁置，暂时先从后端获取
@@ -131,55 +130,55 @@ const feedbackForm = ref(null)
 
 // 反馈表校验对象
 const feedbackRules = {
-    advice: [
-        {
-            required: true,
-            message: '请输入你的问题',
-            trigger: 'blur'
-        },
-        {
-            pattern: /^(?!(\s+$))/,
-            message: '输入有误，不能为全空格',
-            trigger: 'change'
-        }
-    ]
+  advice: [
+    {
+      required: true,
+      message: '请输入你的问题',
+      trigger: 'blur'
+    },
+    {
+      pattern: /^(?!(\s+$))/,
+      message: '输入有误，不能为全空格',
+      trigger: 'change'
+    }
+  ]
 }
 
 // 反馈表单重置
 const handleFeedbackFormReset = () => {
-    feedbackForm.value.resetFields()
+  feedbackForm.value.resetFields()
 }
 
 // 提交用户反馈
 const handleFeedbackSubmit = () => {
-    feedbackForm.value.validate(async (valid) => {
-        if (valid) {
-            try {
-                await request.postUserAdvice({ advice: feedbackData.advice })
-                ElMessage.success('提交成功')
-                feedbackTrigger.value = false
-                handleFeedbackFormReset()
-            } catch (error) {
-                console.log(`${error}`)
-            }
-        }
-    })
+  feedbackForm.value.validate(async (valid) => {
+    if (valid) {
+      try {
+        await request.postUserAdvice({ advice: feedbackData.advice })
+        ElMessage.success('提交成功')
+        feedbackTrigger.value = false
+        handleFeedbackFormReset()
+      } catch (error) {
+        console.log(`${error}`)
+      }
+    }
+  })
 }
 
 // 退出登录
 const handleLoginOut = () => {
-    ElMessageBox.confirm('请确认是否退出登录', '确认框', {
-        cancelButtonText: '取消',
-        confirmButtonText: '确认',
-        type: 'warning',
-    })
+  ElMessageBox.confirm('请确认是否退出登录', '确认框', {
+    cancelButtonText: '取消',
+    confirmButtonText: '确认',
+    type: 'warning',
+  })
     .then(async () => {
-        store.commit('saveUserInfo', null)
-        store.commit('clearUserList')
-        router.push('/login')
+      store.commit('saveUserInfo', null)
+      store.commit('clearUserList')
+      router.push('/login')
     })
     .catch(() => {
-        return
+      return
     })
 }
 </script>

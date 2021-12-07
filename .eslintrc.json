@@ -17,6 +17,8 @@
     "rules": {
       "semi": ["warn","never"],
       "indent": ["warn", 2],
-      "vue/no-v-model-argument": "off"
+      "vue/no-v-model-argument": "off",
+      "vue/no-use-v-if-with-v-for": "off",
+      "no-undef": 0
     }
 }

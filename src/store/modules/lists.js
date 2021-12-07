@@ -7,11 +7,10 @@
  * @FilePath: \Node.js_storee:\毕设项目\Anydo-app\src\store\modules\userLists.js
  */
 import storage from '../../utils/storage'
-import _ from 'lodash'
 
 // initial state
 const state = () => ({
-    userLists: storage.getItem('userLists') || [], // 获取用户清单列表
+  userLists: storage.getItem('userLists') || [], // 获取用户清单列表
 })
 
 // mutations
@@ -27,7 +26,6 @@ const mutations = {
     if (state.userLists.length === 0) {
       state.userLists.push(...lists)
     } else {
-      console.log(lists)
       state.userLists.splice(0, state.userLists.length, ...lists)
     }
     storage.setItem('userLists', state.userLists)
@@ -71,6 +69,6 @@ const mutations = {
 }
 
 export default {
-    state,
-    mutations
+  state,
+  mutations
 }

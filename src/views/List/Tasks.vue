@@ -1,10 +1,10 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-10-12 16:12:01
- * @LastEditTime: 2021-12-04 21:27:00
+ * @LastEditTime: 2021-12-07 23:19:41
  * @LastEditors: Please set LastEditors
  * @Description: 清单任务组件
- * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\List\Tasks.vue
+ * @FilePath: e:\毕设项目\Anydo-app\src\views\List\Tasks.vue
 -->
 <template>
   <div class="Tasks">
@@ -23,7 +23,7 @@
         <el-input
           v-model="newTask.taskInfo"
           class="Tasks__list__addTask__inputTask"
-          :placeholder="'添加任务至 ' + selectedList.desc"
+          :placeholder="selectedList.placeHolder"
         >
           <template #suffix>
             <div class="Tasks__list__addTask__taskIcons">
@@ -62,6 +62,7 @@
               trim-weeks
               class="Tasks__list__addTask__taskCalendar"
               :attributes="calendarAttributes"
+              :model-config="modelConfig"
               :first-day-of-week="+(_.get(timeAndDateData, 'firstDayOfWeek', 1))"
             />
             <div class="Tasks__list__addTask__taskTime">
@@ -83,6 +84,7 @@
                 placeholder="开始日期"
                 class="Tasks__list__addTask__taskQuantum__dateSetting"
                 @change="handleSelectStartDate"
+                value-format="x"
               ></el-date-picker>
               <el-time-picker
                 v-model="newTask.startTaskTime"
@@ -100,6 +102,7 @@
                 placeholder="结束日期"
                 class="Tasks__list__addTask__taskQuantum__dateSetting"
                 :disabledDate="handleDisableDate"
+                value-format="x"
               ></el-date-picker>
               <el-time-picker
                 v-model="newTask.endTaskTime"
@@ -133,7 +136,7 @@
             <el-button
               type="primary"
               class="Tasks__list__addTask__confirm"
-              @click="() => { handleCloseTaskSettings(true) }"
+              @click="handleSaveTaskSetting"
             >确定</el-button>
           </div>
         </div>
@@ -163,9 +166,46 @@
           class="Tasks__list__addTask__addBtn"
           @click="handleAddTask"
         >添加</el-button>
+        <!-- 在所有清单下提示用户选择清单模态框 -->
+        <el-dialog
+          title="清单列表"
+          :width="300"
+          top="5%"
+          v-model="selectListTrigger"
+          :append-to-body="true"
+          :destroy-on-close="true"
+          @close="handleCloseDialog"
+        >
+          <div class="Tasks__list__addTask__selectLists">
+            <div class="selectLists__listContainer">
+              <el-scrollbar>
+                <div
+                    class="Tasks__list__addTask__selectLists__listItem"
+                    v-for="list in userLists"
+                    :key="list.listId"
+                >
+                  <el-checkbox
+                    class="selectLists__checkBox"
+                    @change="() => { handleSelectList(list.listId) }"
+                    :disabled="disable && selectedListId !== list.listId"
+                  />
+                  <span class="Tasks__list__addTask__selectLists__pattern">{{list.listFlag}}</span>
+                  <span class="Tasks__list__addTask__selectLists__listName">{{list.listName}}</span>
+                </div>
+              </el-scrollbar>
+            </div>
+            <div class="Tasks__list__addTask__selectLists__closeSelectLists">
+              <el-button
+                type="primary"
+                class="Tasks__list__addTask__closeBtn"
+                @click="handleConfrimList"
+              >确定</el-button>
+            </div>
+          </div>
+        </el-dialog>
       </div>
       <!-- 任务列表区域 -->
-      <TaskLists :listId="route.params.listId"/>
+      <TaskLists :listId="parseInt(route.params.listId)"/>
     </div>
     <!-- 任务细节展示区域 -->
     <div class="Tasks__detail">
@@ -222,24 +262,30 @@ const timeAndDateData = reactive({})
 
 //! 获取当前用户选择清单名和flag
 const selectedList = reactive({
-  desc: ''
+  desc: '',
+  placeHolder: ''
 })
 watch(
   () => route.params.listId, 
   (val) => {
+    const listId = parseInt(val)
     // listId 一旦变化当前输入任务进行同步清空
     if (newTask.taskInfo) {
       newTask.taskInfo = ''
     }
+    
     // 如果 listId 为 all
-    if (val === 'all') {
-      selectedList.desc = '所有'
+    if (listId === 0 || listId === 1) {
+      selectedList.desc = listId?'今天':'所有'
+      selectedList.placeHolder = '添加任务'
       return
     }
+
     // 根据 listId 在清单中寻找对应清单
     userLists.forEach((list) => {
-      if (list.listId === parseInt(val)) {
+      if (list.listId === listId) {
         selectedList.desc = `${list.listFlag} ${list.listName}`
+        selectedList.placeHolder = `添加任务至 ${list.listName}`
       }
     })
   },
@@ -257,6 +303,12 @@ const calendarAttributes = [
     dates: new Date()
   }
 ]
+
+// 日历日期配置对象
+const modelConfig = {
+  type: 'number',
+  timeAdjust: '00:00:00'
+}
 
 //! 新增任务展示逻辑区域
 // 新增任务设置展开/关闭状态变量
@@ -313,10 +365,10 @@ const showTaskQuantum = ref(false)
 const handleShowTaskDate = () => {
   showTaskQuantum.value = false
   Object.assign(newTask, {
-      startTaskDate: '',
-      startTaskTime: '',
-      endTaskDate: '',
-      endTaskTime: '',
+    startTaskDate: '',
+    startTaskTime: '',
+    endTaskDate: '',
+    endTaskTime: '',
   })
 }
 
@@ -343,8 +395,8 @@ const handleShowTaskQuantum = () => {
   Object.assign(newTask, {
     taskDate: '',
     taskTime: '',
-    startTaskDate: new Date(),  // 默认设定为当前日期
-    endTaskDate: new Date(),
+    startTaskDate: dayjs(new Date()).startOf('day').valueOf() + '',  // 默认设定为当前日期
+    endTaskDate: dayjs(new Date()).startOf('day').valueOf() + '',
     startTaskTime: startTime.toDate(), // 默认设定为当前时间
     endTaskTime: endTime.toDate()
   })
@@ -352,16 +404,19 @@ const handleShowTaskQuantum = () => {
 
 // 根据默认任务日期设定模式来判断是显示时间段还是日期模式
 watch(taskDefaultData, () => {
-   if (_.get(taskDefaultData, 'defaultDateMode', '') !== 'date') {
-     handleShowTaskQuantum()
-   } else {
-     handleShowTaskDate()
-   }
+  if (_.get(taskDefaultData, 'defaultDateMode', '') !== 'date') {
+    handleShowTaskQuantum()
+  } else {
+    handleShowTaskDate()
+  }
 })
 
 //! 时间段模式下选择开始日期结束日期、开始时间结束时间逻辑区域
 // 禁用选择结束日期时小于开始日期的日期
 const handleDisableDate = (date) => {
+  if (!newTask.startTaskDate) {
+    newTask.startTaskDate = dayjs(new Date()).startOf('day').valueOf() + ''
+  }
   if (
     newTask.startTaskDate
     && 
@@ -386,7 +441,18 @@ const handleSelectStartDate = (date) => {
 
 // 选择时间段模式开始时间或结束时间
 const handleSelectQuantumTime = () => {
-  if (newTask.startTaskTime && newTask.endTaskTime) {
+  let startDate, endDate
+  startDate = dayjs(newTask.startTaskDate).date()
+
+  // 选择了结束时间但是没有选择结束日期，需要让用户进行选择结束日期
+  if (!newTask.endTaskDate && newTask.endTaskTime) {
+    ElMessage.error('请选择结束日期')
+    newTask.endTaskTime = ''
+    return
+  }
+  endDate = dayjs(newTask.endTaskDate).date()
+
+  if (newTask.startTaskTime && newTask.endTaskTime && startDate === endDate) {
     const startTime = dayjs(newTask.startTaskTime)
     const endTime = dayjs(newTask.endTaskTime)
 
@@ -418,10 +484,39 @@ const handleCleanTaskSetting = (reset) => {
   })
 }
 
+//! 任务设定值确定（保存）逻辑区域
+const handleSaveTaskSetting = () => {
+  handleCloseTaskSettings(true)
+}
+
 //! 添加任务逻辑区域
+const selectListTrigger = ref(false)
+
+// 清单选择禁用标记
+const disable = ref(false)
+
+// 用户当前选择的清单 listId
+const selectedListId= ref(0)
+
+// 用户选择清单
+const handleSelectList = (val) => {
+  disable.value = !disable.value  // 禁止选择其他清单或解除选择
+  selectedListId.value = val
+}
+
+// 用户选择了添加清单的确认操作
+const handleConfrimList = async () => {
+  await handleSubmitTask(selectedListId.value)
+  selectListTrigger.value = false
+}
+
+// 添加任务按钮操作
 const handleAddTask = () => {
   // 获取当前所选清单清单名
   const listName = selectedList.desc.split(' ')[1]
+
+  // 获取当前 listId
+  const listId = parseInt(route.params.listId)
 
   // 检查是否输入任务
   if (!newTask.taskInfo) {
@@ -429,31 +524,44 @@ const handleAddTask = () => {
     return
   }
 
+  // 如果 listId 为 all 则打开清单列表供用户选择
+  if (listId === 0 || listId === 1) {
+    selectListTrigger.value = true
+    return
+  }
+
   ElMessageBox.confirm(`任务将被添加至${listName}`, '确认框', {
     cancelButtonText: '取消',
     confirmButtonText: '确认',
     type: 'warning',
-  })
-  .then(async () => {
-    const listId = route.params.listId
-    // 将日期时间转换为时间戳格式
-    const task = _.cloneDeep(newTask)
-    for(let key in task) {
-      if (task[key] instanceof Date) {
-        task[key] = task[key].valueOf()
-      }
-    }
-    const params = { listId, task }
-    const res = await request.postUserAddTask(params)
-
-    store.dispatch('saveUserTaskDB', { listId, task: res })
-    ElMessage.success('添加成功')
-    handleCleanTaskSetting(true)  // 重置任务设定
-  })
-  .catch((err) => {
+  }).then(async () => {
+    await handleSubmitTask(listId)
+  }).catch((err) => {
     console.log(err)
     return
   })
+}
+
+// 提交添加的任务
+const handleSubmitTask = async (listId) => {
+  // 将日期时间转换为时间戳格式
+  const task = _.cloneDeep(newTask)
+  for(let key in task) {
+    if (task[key] instanceof Date) {
+      task[key] = task[key].valueOf() + ''
+    }
+  }
+  const params = { listId, task }
+
+  store.dispatch('saveUserTaskDB', params).then(() => {
+    ElMessage.success('添加成功')
+    handleCleanTaskSetting(true)  // 重置任务设定
+  })
+}
+
+// 选择清单模态框关闭操作
+const handleCloseDialog = () => {
+  disable.value = false
 }
 
 //! 获取任务默认值逻辑区域
@@ -740,6 +848,47 @@ const handleAddTask = () => {
 
       &__addBtn:focus {
         background-color: rgba(255, 255, 255, 0.473);
+      }
+
+      &__selectLists {
+        &__listContainer {
+          height: 3.5rem;
+          overflow: auto;
+        }
+
+        &__listItem {
+          display: flex;
+          align-items: center;
+          line-height: 50px;
+          margin: 0 .1rem;
+          box-sizing: border-box;
+          border-bottom: 1px solid rgba(204, 204, 204, 0.329);
+        }
+
+        &__listItem:last-child {
+          border-bottom: none;
+        }
+
+        .selectLists__checkBox {
+          margin-right: .05rem;
+        }
+
+        &__pattern {
+          margin-right: .05rem;
+        }
+
+        &__listName {
+          color: $base-fontColor;
+        }
+
+        &__closeSelectLists {
+          margin: .1rem 0 .05rem 0;
+          text-align: center;
+        }
+
+        &__closeBtn {
+            border: 1px solid rgba(218, 218, 218, 0.61);
+        }
       }
     }
   }

@@ -315,7 +315,7 @@ const handleDeleteList = async (list, index) => {
     await request.postUserDeleteList({ listId: list.listId })
     store.commit('deleteUserList', index)
     if (userLists.length === 0) {
-      router.push({ path: `/list/all/tasks` })
+      router.push({ path: `/list/0/tasks` })
     }
     ElMessage.success('删除成功')
   } catch (error) {
@@ -333,14 +333,12 @@ const handleDeleteList = async (list, index) => {
 
     &__manage {
         font-size: .2rem;
-        position: relative;
-        bottom: -.03rem;
     }
 
     &__add {
         font-size: .15rem;
         position: relative;
-        bottom: -.01rem;
+        bottom: .01rem;
     }
 
     &__everyList > div{

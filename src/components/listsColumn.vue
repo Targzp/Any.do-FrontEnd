@@ -1,17 +1,20 @@
 <!--
  * @Author: your name
  * @Date: 2021-10-12 21:12:02
- * @LastEditTime: 2021-11-01 13:49:39
+ * @LastEditTime: 2021-12-05 20:28:09
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\Home\listsColumn.vue
 -->
 <template>
     <div class="lists">
-        <div class="listsColumn" @click="$emit('update:showList', !showList)">
-            <div>
-                <span :class="['iconfont', 'listsColumn__show',{'listsColumn__show-bottom': showList}]">&#xe6ae;</span>
-                <span class="listsColumn__tip">{{title}}</span>
+        <div
+          :class="['listsColumn', { 'listsColumn--back': background }]"
+          @click="$emit('update:showList', !showList)"
+        >
+            <div class="listsColumn__left">
+                <span :class="['iconfont', 'listsColumn__left__show',{'listsColumn__left__show--bottom': showList}]">&#xe6ae;</span>
+                <span class="listsColumn__left__tip">{{title}}</span>
             </div>
             <slot name="addition"></slot>
         </div>
@@ -28,6 +31,10 @@ defineProps({
   },
   title: {
     type: String
+  },
+  background: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -37,26 +44,37 @@ defineEmits(['update:showList'])
 <style lang="scss">
 @import "../assets/style/variables.scss";
 .listsColumn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: .03rem .1rem;
+  color: $base-fontColor;
+  cursor: pointer;
+
+  &__left {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    padding: 0 .1rem;
-    color: $base-fontColor;
-    cursor: pointer;
+    align-items: center;
 
     &__show {
-        display: inline-block;
-        position: relative;
-        left: -.04rem;
-        transition: all .3s ease;
+      display: inline-block;
+      position: relative;
+      left: -.04rem;
+      transition: all .3s ease;
     }
 
-    &__show-bottom {
-        transform: rotate(90deg);
+    &__show--bottom {
+      transform: rotate(90deg);
     }
 
     &__tip {
-        font-size: .14rem;
+      font-size: .14rem;
     }
+  }
+
+  &--back {
+    border-radius: .02rem;
+    background: rgba(255, 255, 255, 0.2);
+    margin-bottom: .08rem;
+  }
 }
 </style>
