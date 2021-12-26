@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-09-17 17:34:59
- * @LastEditTime: 2021-11-28 23:29:13
+ * @LastEditTime: 2021-12-17 21:18:23
  * @LastEditors: Please set LastEditors
  * @Description: 登录模块页面组件
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\Login&Register\LoginBox.vue
@@ -114,85 +114,85 @@ const loginForm = ref(null)
 let pwdFrequency = 0
 
 const rules = {
-    userName: [
-        {
-            required: true,
-            message: '请输入用户名',
-            trigger: 'blur'
-        }
-    ],
-    userPwd: [
-        {
-            required: true,
-            message: '请输入密码',
-            trigger: 'blur'
-        }
-    ],
-    userMail: [
-        {
-            required: true,
-            message: '请输入邮箱',
-            trigger: 'blur'
-        },
-        {
-            pattern: /^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/,
-            message: '请输入正确格式的邮箱',
-            trigger: 'change'
-        }
-    ],
-    userCode:[
-        {
-            required: true,
-            message: '请输入验证码',
-            trigger: 'blur'
-        }
-    ]
+  userName: [
+    {
+      required: true,
+      message: '请输入用户名',
+      trigger: 'blur'
+    }
+  ],
+  userPwd: [
+    {
+      required: true,
+      message: '请输入密码',
+      trigger: 'blur'
+    }
+  ],
+  userMail: [
+    {
+      required: true,
+      message: '请输入邮箱',
+      trigger: 'blur'
+    },
+    {
+      pattern: /^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/,
+      message: '请输入正确格式的邮箱',
+      trigger: 'change'
+    }
+  ],
+  userCode:[
+    {
+      required: true,
+      message: '请输入验证码',
+      trigger: 'blur'
+    }
+  ]
 }
 
 // 控制密码/短信登录模式切换
 const handleChangeModel = (tip) => {
-    if (tip === 'password') {
-        loginModel.value = true
-    } else {
-        loginModel.value = false
-    }
+  if (tip === 'password') {
+    loginModel.value = true
+  } else {
+    loginModel.value = false
+  }
 
-    // 切换登录模式时删除之前模式的值
-    for (key in user) {
-      user.hasOwnProperty(key) && delete user[key]
-    }
+  // 切换登录模式时删除之前模式的值
+  for (key in user) {
+    user.hasOwnProperty(key) && delete user[key]
+  }
 }
 
 // 用户登录数据提交
 const handleLoginSubmit = () => {
-    loginForm.value.validate(async (valid) => {
-        if (valid) {
-            try {
-                const params = { ...user }
-                const res = await request.login(params)
-                if (res) {
-                    ElMessage.success('登录成功')
-                    store.commit('saveUserInfo', res)
-                    router.push({ name: 'Home' })
-                }
-            } catch (error) {
-                // 当账户或密码输错超过三次则需进行人机验证
-                pwdFrequency++
-                if (pwdFrequency > 3) {
-                    isShow.value = true
-                }
-            }
+  loginForm.value.validate(async (valid) => {
+    if (valid) {
+      try {
+        const params = { ...user }
+        const res = await request.login(params)
+        if (res) {
+          ElMessage.success('登录成功')
+          store.commit('saveUserInfo', res)
+          router.push({ name: 'Home' })
         }
-    })
+      } catch (error) {
+        // 当账户或密码输错超过三次则需进行人机验证
+        pwdFrequency++
+        if (pwdFrequency > 3) {
+          isShow.value = true
+        }
+      }
+    }
+  })
 }
 
 // 发送邮箱验证码逻辑
 const { 
-    computeTime,
-    isShow,
-    onClose,
-    handleIsMailEmpty,
-    handleSendCode
+  computeTime,
+  isShow,
+  onClose,
+  handleIsMailEmpty,
+  handleSendCode
 } = useSendCodeEffect(user)
 
 // 父子数据通信

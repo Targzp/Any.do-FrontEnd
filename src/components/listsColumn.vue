@@ -1,9 +1,9 @@
 <!--
- * @Author: your name
+ * @Author: 胡晨明
  * @Date: 2021-10-12 21:12:02
  * @LastEditTime: 2021-12-05 20:28:09
  * @LastEditors: Please set LastEditors
- * @Description: In User Settings Edit
+ * @Description: 展开栏项目通用组件
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\Home\listsColumn.vue
 -->
 <template>

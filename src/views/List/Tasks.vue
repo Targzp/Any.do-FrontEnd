@@ -1,8 +1,8 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-10-12 16:12:01
- * @LastEditTime: 2021-12-07 23:19:41
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-12-25 16:49:21
+ * @LastEditors: 胡晨明
  * @Description: 清单任务组件
  * @FilePath: e:\毕设项目\Anydo-app\src\views\List\Tasks.vue
 -->
@@ -18,7 +18,10 @@
         <span class="iconfont Tasks__list__header__other">&#xe618;</span>
       </div>
       <!-- 任务增加区域 -->
-      <div class="Tasks__list__addTask">
+      <div
+        class="Tasks__list__addTask"
+        v-if="showAddTask"
+      >
         <!-- 新任务输入框 -->
         <el-input
           v-model="newTask.taskInfo"
@@ -39,128 +42,22 @@
           </template>
         </el-input>
         <!-- 新增任务通用设置模态框 -->
-        <div
-          v-show="showTaskSetting"
-          class="Tasks__list__addTask__taskSetting"
-        >
-          <div class="Tasks__list__addTask__timeModeSelect">
-            <div 
-              :class="['Tasks__list__addTask__timeModeSelect__dateMode', { 'Tasks__list__addTask__timeModeSelect__modeSelected': !showTaskQuantum }]"
-              @click="handleShowTaskDate"
-            >日期</div>
-            <div
-              :class="['Tasks__list__addTask__timeModeSelect__dateMode', { 'Tasks__list__addTask__timeModeSelect__modeSelected': showTaskQuantum }]"
-              @click="handleShowTaskQuantum"
-            >时间段</div>
-          </div>
-          <!-- 日期/时间段模式切换 -->
-          <div
-            v-if="!showTaskQuantum"
-          >
-            <v-date-picker
-              v-model="newTask.taskDate"
-              trim-weeks
-              class="Tasks__list__addTask__taskCalendar"
-              :attributes="calendarAttributes"
-              :model-config="modelConfig"
-              :first-day-of-week="+(_.get(timeAndDateData, 'firstDayOfWeek', 1))"
-            />
-            <div class="Tasks__list__addTask__taskTime">
-              <el-time-picker
-                v-model="newTask.taskTime"
-                placeholder="时间"
-                :class="['Tasks__list__addTask__timeSetting']"
-                :format="_.get(timeAndDateData, 'timeFormat', '24')==='24'?'HH:mm:ss':'hh:mm:ss A'"
-              >
-              </el-time-picker>
-            </div>
-          </div>
-          <div v-else>
-            <div class="Tasks__list__addTask__taskQuantum">
-              <span class="Tasks__list__addTask__taskQuantum__title">开始</span>
-              <el-date-picker
-                v-model="newTask.startTaskDate"
-                type="date"
-                placeholder="开始日期"
-                class="Tasks__list__addTask__taskQuantum__dateSetting"
-                @change="handleSelectStartDate"
-                value-format="x"
-              ></el-date-picker>
-              <el-time-picker
-                v-model="newTask.startTaskTime"
-                placeholder="开始时间"
-                class="Tasks__list__addTask__taskQuantum__timeSetting"
-                :format="_.get(timeAndDateData, 'timeFormat', '24')==='24'?'HH:mm':'hh:mm A'"
-                @change="handleSelectQuantumTime"
-              ></el-time-picker>
-            </div>
-            <div class="Tasks__list__addTask__taskQuantum">
-              <span class="Tasks__list__addTask__taskQuantum__title">结束</span>
-              <el-date-picker
-                v-model="newTask.endTaskDate"
-                type="date"
-                placeholder="结束日期"
-                class="Tasks__list__addTask__taskQuantum__dateSetting"
-                :disabledDate="handleDisableDate"
-                value-format="x"
-              ></el-date-picker>
-              <el-time-picker
-                v-model="newTask.endTaskTime"
-                placeholder="结束时间"
-                class="Tasks__list__addTask__taskQuantum__timeSetting"
-                :format="_.get(timeAndDateData, 'timeFormat', '24')==='24'?'HH:mm':'hh:mm A'"
-                @change="handleSelectQuantumTime"
-              ></el-time-picker>
-            </div>
-          </div>
-          <div class="Tasks__list__addTask__taskNotify">
-            <el-select
-              v-model="newTask.notify"
-              placeholder="提醒"
-              :clearable="true"
-            >
-                <el-option value="0" label="准时"></el-option>
-                <el-option value="5" label="提前5分钟"></el-option>
-                <el-option value="30" label="提前30分钟"></el-option>
-                <el-option value="60" label="提前1小时"></el-option>
-                <el-option value="1440" label="提前1天"></el-option>
-            </el-select>
-          </div>
-          <div class="Tasks__list__addTask__button">
-            <el-button
-              type="info"
-              plain
-              class="Tasks__list__addTask__clear"
-              @click="() => handleCleanTaskSetting(false)"
-            >清除</el-button>
-            <el-button
-              type="primary"
-              class="Tasks__list__addTask__confirm"
-              @click="handleSaveTaskSetting"
-            >确定</el-button>
-          </div>
-        </div>
+        <TasksGeneralSetting
+          v-if="showTaskSetting"
+          :newTask="newTask"
+          :taskDefaultData="taskDefaultData"
+          :timeAndDateData="timeAndDateData"
+          :isReset="reset"
+          :offset="0.05"
+          @saveTaskSetting="handleSaveTaskSetting"
+        />
         <!-- 新增任务优先级设置模态框 -->
-        <div
-          v-show="showTaskPriority"
-          class="Tasks__list__addTask__taskPriority"
-        >
-          <span class="Tasks__list__addTask__taskPriority__title">优先级</span>
-          <div class="Tasks__list__addTask__taskPriority__icons">
-            <span
-              v-for="(taskPriority, index) in taskPrioritys"
-              :key="taskPriority.iconFlag"
-              :class="[
-                'iconfont',
-                `Tasks__list__addTask__taskPriority__${taskPriority.classFlag}`,
-                { 'selectedPriority':  selectedPriority === taskPriority.dataFlag }
-              ]"
-              :title="taskPriority.title"
-              v-html="taskPriority.iconFlag"
-              @click="() => handleSelectPriority(index)"
-            ></span>
-          </div>
-        </div>
+        <TasksPrioritySetting
+          v-if="showTaskPriority"
+          :taskPriority="newTask.taskPriority"
+          @saveTaskPriority="handleSaveTaskPriority"
+          :offset="0.2"
+        />
         <!-- 新增任务添加按钮 -->
         <el-button
           class="Tasks__list__addTask__addBtn"
@@ -207,10 +104,17 @@
       <!-- 任务列表区域 -->
       <TaskLists :listId="parseInt(route.params.listId)"/>
     </div>
-    <!-- 任务细节展示区域 -->
+    <!-- 任务详细信息展示区域 -->
     <div class="Tasks__detail">
-      <div class="Tasks__detail__initial">Tasks__detail__initial</div>
-      <router-view></router-view>
+      <!-- 没有选中任务时的默认展示 -->
+      <div
+        class="Tasks__detail__initial"
+        v-if="userTasks.length > 0 && !route.params.taskId"
+      >
+        <img src="@/assets/images/点击查看任务.svg" class="Tasks__detail__initial__img"/>
+        <span class="Tasks__detail__initial__content">点击任务标题查看详情</span>
+      </div>
+        <router-view else></router-view>
     </div>
     <!-- Modal 区域。随设定任务日期和优先级打开 -->
     <div
@@ -226,9 +130,10 @@ import { useRoute } from 'vue-router'
 import { useStore } from 'vuex'
 import request from '../../api/index'
 import _ from 'lodash'
-import dayjs from 'dayjs'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import TaskLists from './TasksLists.vue'
+import TasksGeneralSetting from './TasksGeneralSetting.vue'
+import TasksPrioritySetting from './TasksPrioritySetting.vue'
 
 // 状态管理仓库
 const store = useStore()
@@ -238,6 +143,9 @@ const route = useRoute()
 
 // 清单列表
 const userLists = store.state.lists.userLists
+
+// 当前清单任务列表
+const userTasks = store.state.tasks.userTasks
 
 //! 组件内部通用状态
 // 新增任务数据
@@ -251,7 +159,6 @@ const newTask = reactive({
   endTaskTime: '',            // 新增任务时间段模式结束时间
   notify: '',      // 新增任务提醒设置
   taskPriority: '', // 新增任务默认值
-  doneFlag: 0       // 新增任务完成标志
 })
 
 // 任务默认值
@@ -259,6 +166,9 @@ const taskDefaultData = reactive({})
 
 // 时间和日期默认设定
 const timeAndDateData = reactive({})
+
+// 任务添加是否显示标记
+const showAddTask = ref(true)
 
 //! 获取当前用户选择清单名和flag
 const selectedList = reactive({
@@ -269,14 +179,27 @@ watch(
   () => route.params.listId, 
   (val) => {
     const listId = parseInt(val)
+    
+    if (listId === 2 || listId === 3) {
+      showAddTask.value = false
+    } else {
+      showAddTask.value = true
+    }
+
     // listId 一旦变化当前输入任务进行同步清空
     if (newTask.taskInfo) {
       newTask.taskInfo = ''
     }
     
     // 如果 listId 为 all
-    if (listId === 0 || listId === 1) {
-      selectedList.desc = listId?'今天':'所有'
+    if ([0,1,2,3].includes(listId)) {
+      let descDic = {
+        0: '所有',
+        1: '今天',
+        2: '已完成',
+        3: '垃圾桶'
+      }
+      selectedList.desc = descDic[listId]
       selectedList.placeHolder = '添加任务'
       return
     }
@@ -292,24 +215,6 @@ watch(
   { immediate: true }
 )
 
-// 日历装饰器对象
-const calendarAttributes = [
-  {
-    key: 'today',
-    highlight: {
-      color: 'blue',
-      fillMode: 'outline'
-    },
-    dates: new Date()
-  }
-]
-
-// 日历日期配置对象
-const modelConfig = {
-  type: 'number',
-  timeAdjust: '00:00:00'
-}
-
 //! 新增任务展示逻辑区域
 // 新增任务设置展开/关闭状态变量
 const showTaskSetting = ref(false)
@@ -317,34 +222,33 @@ const showTaskSetting = ref(false)
 // 新增任务设置展开
 const handleShowTaskSetting = (save) => {
   showTaskSetting.value = !showTaskSetting.value
-  // 如果是点击模态关闭，清空任务设置
+  // 如果是点击模态关闭，重置任务设置
   if (!save && !showTaskSetting.value) {
-    handleCleanTaskSetting(false)
+    handleResetTaskSetting('modal')
   }
 }
 
-//! 新增任务优先级相关逻辑区域
-// 新增任务优先级标记集合
-const taskPrioritys = ref([
-  { classFlag: 'icon1', title: '低', iconFlag: '&#xe673;', dataFlag: 'low' },
-  { classFlag: 'icon2', title: '中', iconFlag: '&#xe674;', dataFlag: 'mid' },
-  { classFlag: 'icon3', title: '高', iconFlag: '&#xe675;', dataFlag: 'high' }
-])
-
-// 当前选中的优先级
-const selectedPriority = ref('')
-
-// 选中指定任务优先级处理
-const handleSelectPriority = (index) => {
-  selectedPriority.value = taskPrioritys.value[index].dataFlag
-}
-
-// 新增任务优先级设置展开/关闭状态变量
-const showTaskPriority = ref(false)
-
-// 新增任务优先级展开
-const handleShowTaskPriority = () => {
-  showTaskPriority.value = !showTaskPriority.value
+//! 重置任务设定值逻辑区域
+// 重置标记
+const reset = ref(false)
+// 重置任务值设定
+const handleResetTaskSetting = (flag) => {
+  // 将任务设定值进行合并重置
+  Object.assign(newTask, {
+    taskInfo: flag==='modal'?newTask.taskInfo:'',
+    taskDate: '',
+    taskTime: '',
+    startTaskDate: '',
+    startTaskTime: '',
+    endTaskDate: '',
+    endTaskTime: '',
+    notify: taskDefaultData.defaultNotify,
+    taskPriority: flag === 'modal'?newTask.taskPriority:taskDefaultData.defaultPriority // 提交任务之后重置优先级
+  })
+  reset.value = true
+  setTimeout(() => {
+    reset.value = false
+  }, 0)
 }
 
 //! 点击模态背景相关逻辑区域
@@ -357,136 +261,35 @@ const handleCloseTaskSettings = (save) => {
   }
 }
 
-//! 任务设定模式（日期/时间段）切换逻辑区域
-// 任务设定模式切换（日期/时间段）
-const showTaskQuantum = ref(false)
-
-// 切换为任务日期设定模式
-const handleShowTaskDate = () => {
-  showTaskQuantum.value = false
-  Object.assign(newTask, {
-    startTaskDate: '',
-    startTaskTime: '',
-    endTaskDate: '',
-    endTaskTime: '',
-  })
-}
-
-// 切换为任务时间段设定模式
-const handleShowTaskQuantum = () => {
-  showTaskQuantum.value = true
-
-  let startTime = dayjs(new Date()) // 获取当前时间
-  let nowHour = startTime.hour()
-  let nowMinute = startTime.minute()
-
-  // 如果当前小于 30 分钟，那么把开始时间设置为 30 分
-  // 如果当前大于 30 分钟，那么把开始时间设置为 0 分，下一个小时
-  if (nowMinute < 30) {
-    startTime = startTime.minute(30)
-  } else if (nowMinute > 30) {
-    startTime = startTime.minute(0)
-    startTime = startTime.hour(nowHour + 1)
-  }
-
-  // 结束时间就是为开始时间增加 30 分钟
-  let endTime = dayjs(startTime.valueOf()).minute(startTime.minute() + 30)
-
-  Object.assign(newTask, {
-    taskDate: '',
-    taskTime: '',
-    startTaskDate: dayjs(new Date()).startOf('day').valueOf() + '',  // 默认设定为当前日期
-    endTaskDate: dayjs(new Date()).startOf('day').valueOf() + '',
-    startTaskTime: startTime.toDate(), // 默认设定为当前时间
-    endTaskTime: endTime.toDate()
-  })
-}
-
-// 根据默认任务日期设定模式来判断是显示时间段还是日期模式
-watch(taskDefaultData, () => {
-  if (_.get(taskDefaultData, 'defaultDateMode', '') !== 'date') {
-    handleShowTaskQuantum()
-  } else {
-    handleShowTaskDate()
-  }
-})
-
-//! 时间段模式下选择开始日期结束日期、开始时间结束时间逻辑区域
-// 禁用选择结束日期时小于开始日期的日期
-const handleDisableDate = (date) => {
-  if (!newTask.startTaskDate) {
-    newTask.startTaskDate = dayjs(new Date()).startOf('day').valueOf() + ''
-  }
-  if (
-    newTask.startTaskDate
-    && 
-    (dayjs(date).startOf('day').valueOf() < dayjs(newTask.startTaskDate).startOf('day').valueOf())
-  ) {
-    return true
-  } else {
-    return false
-  }
-}
-
-// 选择开始日期的逻辑
-const handleSelectStartDate = (date) => {
-  if (
-    newTask.endTaskDate
-    &&
-    (dayjs(newTask.endTaskDate).startOf('day').valueOf() < dayjs(date).startOf('day').valueOf())
-  ) {
-    newTask.endTaskDate = ''
-  }
-}
-
-// 选择时间段模式开始时间或结束时间
-const handleSelectQuantumTime = () => {
-  let startDate, endDate
-  startDate = dayjs(newTask.startTaskDate).date()
-
-  // 选择了结束时间但是没有选择结束日期，需要让用户进行选择结束日期
-  if (!newTask.endTaskDate && newTask.endTaskTime) {
-    ElMessage.error('请选择结束日期')
-    newTask.endTaskTime = ''
-    return
-  }
-  endDate = dayjs(newTask.endTaskDate).date()
-
-  if (newTask.startTaskTime && newTask.endTaskTime && startDate === endDate) {
-    const startTime = dayjs(newTask.startTaskTime)
-    const endTime = dayjs(newTask.endTaskTime)
-
-    const startHour = startTime.hour()
-    const endHour = endTime.hour()
-    const startMinute = startTime.minute()
-    const endMinute = endTime.minute()
-
-    if (endHour < startHour || (endHour === startHour && endMinute <= startMinute)) {
-      ElMessage.error('结束时间不能小于等于开始时间')
-      newTask.endTaskTime = ''
-    } 
-  }
-}
-
-//! 清除/重置任务设定值逻辑区域
-// 清除/重置任务值设定
-const handleCleanTaskSetting = (reset) => {
-  // 将任务设定值进行合并清除/重置
-  Object.assign(newTask, {
-    taskInfo: reset?'':newTask.taskInfo,
-    taskDate: '',
-    taskTime: '',
-    startTaskDate: '',
-    startTaskTime: '',
-    endTaskDate: '',
-    endTaskTime: '',
-    notify: reset?taskDefaultData.defaultNotify:''
-  })
-}
-
 //! 任务设定值确定（保存）逻辑区域
-const handleSaveTaskSetting = () => {
+const handleSaveTaskSetting = (subNewTask) => {
+  // 获取在任务设定模态框中设定的值
+  const generalTaskSetting = _.pick(subNewTask, [
+    'taskDate',
+    'taskTime',
+    'startTaskDate',
+    'startTaskTime',
+    'endTaskDate',
+    'endTaskTime',
+    'notify'
+  ])
+
+  Object.assign(newTask, generalTaskSetting)
   handleCloseTaskSettings(true)
+}
+
+//! 新增任务优先级相关逻辑区域
+// 新增任务优先级设置展开/关闭状态变量
+const showTaskPriority = ref(false)
+
+// 新增任务优先级展开
+const handleShowTaskPriority = () => {
+  showTaskPriority.value = !showTaskPriority.value
+}
+
+// 任务优先级赋值操作
+const handleSaveTaskPriority = (taskPriority) => {
+  newTask.taskPriority = taskPriority
 }
 
 //! 添加任务逻辑区域
@@ -520,7 +323,7 @@ const handleAddTask = () => {
 
   // 检查是否输入任务
   if (!newTask.taskInfo) {
-    ElMessage.warning('请输入任务！')
+    ElMessage.warning('请输入任务!')
     return
   }
 
@@ -549,13 +352,15 @@ const handleSubmitTask = async (listId) => {
   for(let key in task) {
     if (task[key] instanceof Date) {
       task[key] = task[key].valueOf() + ''
+    } else if (key === 'taskDate') {
+      task[key] = task[key] + ''
     }
   }
   const params = { listId, task }
 
   store.dispatch('saveUserTaskDB', params).then(() => {
     ElMessage.success('添加成功')
-    handleCleanTaskSetting(true)  // 重置任务设定
+    handleResetTaskSetting()  // 重置任务设定
   })
 }
 
@@ -572,7 +377,6 @@ const handleCloseDialog = () => {
     const { taskDefault, timeAndDate } = res
     Object.assign(taskDefaultData, taskDefault)
     newTask.notify = taskDefaultData.defaultNotify  // 将默认提醒进行赋值
-    selectedPriority.value = taskDefaultData.defaultPriority  // 将默认优先级进行选中
     newTask.taskPriority = taskDefaultData.defaultPriority    // 将默认优先级进行赋值
     Object.assign(timeAndDateData, timeAndDate)
   } catch (error) {
@@ -584,14 +388,16 @@ const handleCloseDialog = () => {
 <style lang="scss">
 @import '../../assets/style/variables.scss';
 .Tasks {
-  display: flex;
   height: 100%;
+  display: flex;
   position: relative;
 
   &__list {
-    flex: 3 1 auto;
-    margin: .15rem 0;
-    border-right: .01rem solid rgba(223, 223, 223, 0.644);
+    height: 100%;
+    flex: 3 1 0%;
+    padding: .15rem 0;
+    box-sizing: border-box;
+    box-shadow: 1px 0px 1px -1px rgb(255, 255, 255);
     display: flex;
     flex-flow: column;
 
@@ -627,206 +433,8 @@ const handleCloseDialog = () => {
         margin-right: .12rem;
       }
 
-      &__taskSetting {
-        width: 2.7rem;
-        position: absolute;
-        top: .36rem;
-        right: .05rem;
-        z-index: 1;
-        background-color: $base-bgColor;
-        border-radius: .05rem;
-        box-shadow: 0 0 .15rem .02rem rgba(196, 196, 196, 0.39);
-      }
-
       &__taskPriorityIcon {
         font-size: .22rem;
-      }
-
-      &__taskPriority {
-        padding: .08rem .1rem;
-        box-sizing: border-box;
-        position: absolute;
-        top: .36rem;
-        right: .2rem;
-        z-index: 1;
-        background-color: $base-bgColor;
-        border-radius: .05rem;
-        box-shadow: 0 0 .15rem .02rem rgba(196, 196, 196, 0.39);
-
-        &__title {
-          display: inline-block;
-          color: $lighter-fontColor;
-          font-size: .13rem;
-          margin-bottom: .05rem;
-        }
-
-        .selectedPriority {
-          border-radius: .12rem;
-          background-color: $background-light;
-          background-origin: padding-box;
-        }
-
-        &__icons {
-          font-size: .24rem;
-          display: flex;
-          justify-content: center;
-        }
-
-        &__icon1, &__icon2, &__icon3 {
-          padding: .02rem;
-        }
-
-        &__icon1 {
-          color: #f25555;
-          margin-right: .12rem;
-        }
-
-        &__icon2 {
-          color: #ffbb44;
-          margin-right: .12rem;
-        }
-
-        &__icon3 {
-          color: #0888ff;
-        }
-      }
-
-      &__timeModeSelect {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: .12rem 0 .05rem 0;
-        font-size: .13rem;
-        color: $lighter-fontColor;
-
-        &__dateMode, &__quantumMode {
-          line-height: .25rem;
-          padding: 0rem .12rem;
-          background-color: rgba(224, 224, 224, 0.329);
-          border-radius: .2rem;
-          cursor: pointer;
-        }
-
-        &__dateMode {
-          margin-right: .08rem;
-        }
-
-        &__modeSelected {
-          color: rgb(49,130,206)
-        }
-      }
-
-      &__taskCalendar {
-        border: none;
-        border-radius: .01rem;
-        display: block;
-        margin: auto;
-
-        .vc-popover-content {   /* 内部年份选择器样式修改 */
-          border-radius: .01rem;
-        }
-      }
-
-      &__taskTime {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin: 0 .1rem .1rem .1rem;
-
-        .el-input, .el-input__inner, .el-input__icon {
-          height: .3rem;
-          line-height: .3rem;
-        }
-
-        .el-input {
-          border: .01rem solid #ccc;
-          border-radius: .05rem;
-        }
-
-        .el-input__icon {
-          color: #ccc;
-        }
-      }
-
-      &__timeSetting {
-        flex: 1;
-      }
-
-      &__taskNotify {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin: 0 .12rem 0 .1rem;
-
-        .el-select {
-          flex: 1;
-        }
-
-        .el-input, .el-input__inner, .el-input__icon {
-          height: .3rem;
-          line-height: .3rem;
-        }
-
-        .el-input {
-          border: .01rem solid #ccc;
-          border-radius: .05rem;
-        }
-      }
-
-      &__taskQuantum {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin: .1rem;
-
-        &__title {
-          font-size: .13rem;
-          margin-right: .08rem;
-        }
-
-        &__dateSetting, &__timeSetting {
-          flex: 1;
-          border: .01rem solid #ccc;
-          border-radius: .05rem;
-        }
-
-        &__dateSetting {
-          margin-right: .1rem;
-        }
-
-        &__timeSetting {
-          flex: 1;
-        }
-
-        .el-input, .el-input__inner, .el-input__icon {
-          height: .3rem;
-          line-height: .3rem;
-        }
-
-        .el-input__inner{
-          padding-left: .04rem;
-          font-size: .12rem;
-        }
-
-        .el-input__prefix {
-          display: none;
-        }
-      }
-
-      &__taskQuantum:nth-child(1) {
-        margin-bottom: .1rem;
-      }
-
-      &__button {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin: .1rem;
-      }
-
-      &__clear, &__confirm  {
-        flex: 1;
-        border-radius: .05rem;
       }
 
       .el-input__inner {
@@ -894,7 +502,26 @@ const handleCloseDialog = () => {
   }
 
   &__detail {
-    flex: 2 1 auto;
+    padding: .15rem 0 0 0;
+    flex: 2 1 0%;
+    &__initial {
+      margin-top: 1.31rem;
+      display: flex;
+      flex-flow: column nowrap;
+      justify-content: center;
+      align-items: center;
+
+      &__img {
+        width: 180px;
+        filter: opacity(.5);
+      }
+
+      &__content {
+        font-size: .15rem;
+        margin-bottom: .1rem;
+        color: rgb(80, 80, 80);
+      }
+    }
   }
 
   &__modal {

@@ -1,24 +1,25 @@
-/* eslint-disable indent */
 <!--
  * @Author: 胡晨明
  * @Date: 2021-12-02 14:10:07
- * @LastEditTime: 2021-12-07 23:12:54
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-12-23 23:46:27
+ * @LastEditors: 胡晨明
  * @Description: 任务列表组件
  * @FilePath: \Anydo-app\src\views\List\TasksLists.vue
 -->
 <template>
   <div class="taskLists">
-    <el-scrollbar>
+    <el-scrollbar v-if="userTasks.length > 0">
       <!-- 任务列表 -->
-      <div class="taskLists__allTasks">
+      <div
+        class="taskLists__allTasks"
+      >
         <!-- 显示指定 listId 清单任务集合 -->
         <draggable
           :list="userTasks"
           @start="dragging = true"
           @end="dragging = false"
           item-key="id"
-          v-if="syncListId !== 0"
+          v-if="syncListId !== 0 && syncListId !== 2"
         >
           <template #item="{element}">
             <div>
@@ -29,19 +30,20 @@
                 ]"
                 @mouseenter="enterTaskId = element.id"
                 @mouseleave="enterTaskId = -1"
-                @click="selectedTaskId = element.id"
+                @click="() => { handleCheckTaskInfo(element.id, element.listId, element.taskId) }"
+                v-if="element.task && !element.task.doneFlag"
               >
                 <el-checkbox
                   size="medium"
                   class="doneCheck"
-                  @change="() => { handleCompleteTask(element.taskId) }"
+                  @change="() => { handleCompleteTask({id: element.id, listId: element.listId, taskId: element.taskId, flag: 'done', value: 1}) }"
                 />
                 <span class="taskInfo">{{element.task && element.task.taskInfo}}</span>
                 <span
                   v-if="syncListId === 1"
                   class="listInfo"
                   @click.self="() => { handleGotoList(element.listId) }"
-                >{{handleTodayTaskList(element.listId)}}</span>
+                >{{handleTaskList(element.listId)}}</span>
               </div>
             </div>
           </template>
@@ -66,19 +68,19 @@
               <template #item="{element}">
                 <div>
                   <div
-                    v-if="element.listId === list.listId && showLists[list.listId]"
+                    v-if="element.listId === list.listId && showLists[list.listId] && element.task && !element.task.doneFlag"
                     :class="[
                       'taskLists__allTasks__task', 
                       { 'selectedStyle':  enterTaskId === element.id || selectedTaskId === element.id}
                     ]"
                     @mouseenter="enterTaskId = element.id"
                     @mouseleave="enterTaskId = -1"
-                    @click="selectedTaskId = element.id"
+                    @click="() => { handleCheckTaskInfo(element.id, element.listId, element.taskId) }"
                   >
                     <el-checkbox
                       size="medium"
                       class="doneCheck"
-                      @change="() => { handleCompleteTask(element.taskId) }"
+                      @change="() => { handleCompleteTask({id: element.id, listId: element.listId, taskId: element.taskId, flag: 'done', value: 1}) }"
                     />
                     <span class="taskInfo">{{element.task && element.task.taskInfo}}</span>
                   </div>
@@ -87,8 +89,58 @@
             </draggable>
           </template>
         </listsColumn>
+        <!-- 已完成任务列表 -->
+        <listsColumn
+          v-if="syncListId === 2"
+          v-for="doneTask in userTasks"
+          :key="doneTask.doneTime"
+          v-model:showList="doneTask.show"
+          :title="dayjs(+doneTask.doneTime).format('YYYY/MM/DD')"
+          :background="true"
+          :style="{ marginBottom: '.08rem' }"
+        >
+          <template v-slot:content>
+            <draggable
+              :list="doneTask.tasks"
+              @start="dragging = true"
+              @end="dragging = false"
+              item-key="id"
+            >
+              <template #item="{element}">
+                <div>
+                  <div
+                    v-if="doneTask.show"
+                    :class="[
+                      'taskLists__allTasks__task', 
+                      { 'selectedStyle':  enterTaskId === element.id || selectedTaskId === element.id}
+                    ]"
+                    @mouseenter="enterTaskId = element.id"
+                    @mouseleave="enterTaskId = -1"
+                    @click="() => { handleCheckTaskInfo(element.id, element.listId, element.taskId) }"
+                  >
+                    <el-checkbox
+                      size="medium"
+                      class="doneCheck"
+                      checked
+                      @change="() => { handleCompleteTask({id: element.id, listId: element.listId, taskId: element.taskId, flag: 'done', value: 0, extValue: doneTask.doneTime}) }"
+                    />
+                    <span class="taskInfo">{{element.task && element.task.taskInfo}}</span>
+                    <span
+                      class="listInfo"
+                    >{{handleTaskList(element.listId)}}</span>
+                  </div>
+                </div>
+              </template>
+            </draggable>
+          </template>
+        </listsColumn>
       </div>
     </el-scrollbar>
+    <div v-else class="taskLists__NoneBox">
+      <img src="@/assets/images/暂无任务.svg" class="taskLists__NoneBox__img"/>
+      <span class="taskLists__NoneBox__content">没想好把任务安排在哪？可以先放这里</span>
+      <span class="taskLists__NoneBox__tips">在输入框记下来</span>
+    </div>
   </div>
 </template>
 
@@ -97,6 +149,7 @@ import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
 import draggable from 'vuedraggable'
 import listsColumn from '@/components/listsColumn.vue'
+import dayjs from 'dayjs'
 
 const router = useRouter()
 
@@ -116,7 +169,7 @@ const userLists = store.state.lists.userLists
 const showLists = reactive({})
 watch(() => userLists, (val) => {
   val.map((item) => {
-    showLists[item.listId] = false
+    showLists[item.listId] = true
   })
 }, {
   deep: true,
@@ -142,13 +195,16 @@ const enterTaskId = ref(0)
 // 鼠标选中任务区域标记
 const selectedTaskId = ref(0)
 
-// 点击完成任务
-const handleCompleteTask = (taskId) => {
-  store.dispatch('', taskId)
+// 点击完成任务或还原完成任务
+const handleCompleteTask = (settingValues) => {
+  if (settingValues.value) {
+    settingValues.extValue = dayjs().startOf('day').valueOf() + ''  // 设置任务结束日期时间戳
+  }
+  store.dispatch('setUserTask', settingValues)
 }
 
 // 获取任务清单名称和flag
-const handleTodayTaskList = (listId) => {
+const handleTaskList = (listId) => {
   let listDesc = ''
   userLists.forEach((list) => {
     if (list.listId === listId) {
@@ -161,6 +217,16 @@ const handleTodayTaskList = (listId) => {
 // 查看今天任务下点击任务清单信息跳转到指定清单
 const handleGotoList = (listId) => {
   router.push({ path: `/list/${listId}/tasks` })
+}
+
+// 点击指定任务查看任务信息
+const handleCheckTaskInfo = (id, listId, taskId) => {
+  selectedTaskId.value = id
+  if (syncListId.value === 0 || syncListId.value === 1 || syncListId.value === 2) {
+    router.push({ path: `/list/${syncListId.value}/tasks/${listId}/${taskId}` })
+  } else {
+    router.push({ path: `/list/${syncListId.value}/tasks/${taskId}` })
+  }
 }
 
 // 获取全部任务列表
@@ -208,6 +274,29 @@ const handleGotoList = (listId) => {
 
     .selectedStyle {
       background: rgba(255, 255, 255, 0.2);
+    }
+  }
+
+  &__NoneBox {
+    height: 100%;
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    margin-top: .3rem;
+    &__img {
+      width: 180px;
+      filter: opacity(.5);
+    }
+
+    &__content {
+      font-size: .15rem;
+      margin-bottom: .1rem;
+      color: rgb(80, 80, 80);
+    }
+
+    &__tips {
+      font-size: .13rem;
+      color: rgb(102, 102, 102);
     }
   }
 }

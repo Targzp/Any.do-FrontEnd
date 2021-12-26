@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-09-16 16:31:52
- * @LastEditTime: 2021-10-15 17:20:32
+ * @LastEditTime: 2021-12-19 20:46:19
  * @LastEditors: Please set LastEditors
  * @Description: 应用界面框架
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\Home.vue
@@ -32,7 +32,6 @@ import UserAsideVue from '../UserAside/UserAside.vue';
   &__container {
     width: 80%;
     height: 85%;
-    min-height: 6.5rem;
     position: absolute;
     left: 50%;
     top: 50%;
@@ -46,6 +45,7 @@ import UserAsideVue from '../UserAside/UserAside.vue';
     }
 
     &__main {
+      height: 100%;
       min-width: 6rem;
       margin-left: .2rem;
       flex: 1 1 auto;

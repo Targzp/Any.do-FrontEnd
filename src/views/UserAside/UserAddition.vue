@@ -1,8 +1,8 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-10-30 15:38:26
- * @LastEditTime: 2021-12-05 20:22:52
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-12-25 20:42:32
+ * @LastEditors: 胡晨明
  * @Description: 用户附加功能区域组件
  * @FilePath: \Node.js_storee:\毕设项目\Anydo-app\src\views\UserAside\UserAddition.vue
 -->
@@ -171,15 +171,13 @@ const handleLoginOut = () => {
     cancelButtonText: '取消',
     confirmButtonText: '确认',
     type: 'warning',
+  }).then(async () => {
+    store.commit('saveUserInfo', null)
+    store.commit('clearUserList')
+    router.push('/login')
+  }).catch(() => {
+    return
   })
-    .then(async () => {
-      store.commit('saveUserInfo', null)
-      store.commit('clearUserList')
-      router.push('/login')
-    })
-    .catch(() => {
-      return
-    })
 }
 </script>
 

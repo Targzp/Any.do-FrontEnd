@@ -1,8 +1,8 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-10-26 17:00:23
- * @LastEditTime: 2021-12-02 14:47:25
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-12-25 20:28:12
+ * @LastEditors: 胡晨明
  * @Description: 用户清单界面组件
  * @FilePath: \Node.js_storee:\毕设项目\Anydo-app\src\views\UserAside\UserLists.vue
 -->
@@ -11,39 +11,39 @@
         <listsColumn v-model:showList="showList" title="清单">
             <template v-slot:addition>
                 <div>
-                    <span
-                        class="iconfont UserLists__manage"
-                        @click.stop="handleManageListOpen"
-                    >
-                        &#xe605;
-                    </span>
-                    <span
-                        class="iconfont UserLists__add"
-                        @click.stop="handleAddListOpen"
-                    >
-                        &#xe600;
-                    </span>
+                  <span
+                    class="iconfont UserLists__manage"
+                    @click.stop="handleManageListOpen"
+                  >
+                    &#xe605;
+                  </span>
+                  <span
+                    class="iconfont UserLists__add"
+                    @click.stop="handleAddListOpen"
+                  >
+                    &#xe600;
+                  </span>
                 </div>
             </template>
             <template v-slot:content>
                 <draggable
-                    :list="userLists"
-                    @start="dragging = true" 
-                    @end="dragging = false"
-                    item-key="listId"
+                  :list="userLists"
+                  @start="dragging = true" 
+                  @end="dragging = false"
+                  item-key="listId"
                 >
-                    <template #item="{element}">
-                        <div 
-                            class="UserLists__everyList"
-                            v-show="showList"
-                            @click="() => handleListClick(element.listId)"
-                        >
-                            <div>
-                                <span class="UserLists__pattern">{{element.listFlag}}</span>
-                                <span class="UserLists__listName">{{element.listName}}</span>
-                            </div>   
-                        </div>
-                    </template>
+                  <template #item="{element}">
+                    <div 
+                      class="UserLists__everyList"
+                      v-show="showList"
+                      @click="() => handleListClick(element.listId)"
+                    >
+                      <div>
+                          <span class="UserLists__pattern">{{element.listFlag}}</span>
+                          <span class="UserLists__listName">{{element.listName}}</span>
+                      </div> 
+                    </div>
+                  </template>
                 </draggable>
             </template>
         </listsColumn>
@@ -340,7 +340,7 @@ const handleDeleteList = async (list, index) => {
         position: relative;
         bottom: .01rem;
     }
-
+    
     &__everyList > div{
         padding: .1rem;
         cursor: pointer;

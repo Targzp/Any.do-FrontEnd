@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-09-17 19:50:03
- * @LastEditTime: 2021-12-03 10:09:11
+ * @LastEditTime: 2021-12-17 17:50:47
  * @LastEditors: Please set LastEditors
  * @Description: 注册模块页面组件
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\Login&Register\RegisterBox.vue
@@ -79,7 +79,7 @@
 import { ref, reactive } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useSendCodeEffect } from '../../utils/verifyMail.js'
-import Vcode from "vue3-puzzle-vcode";
+import Vcode from "vue3-puzzle-vcode"
 import request from '../../api/index'
 
 // 用户注册数据
@@ -90,95 +90,95 @@ const registerForm = ref(null)
 
 // 注册表单校验规则
 const rules = {
-    userName: [
-        {
-            required: true,
-            message: '请输入用户名',
-            trigger: 'blur'
+  userName: [
+    {
+      required: true,
+      message: '请输入用户名',
+      trigger: 'blur'
+    }
+  ],
+  userPwd: [
+    {
+      required: true,
+      message: '请输入密码',
+      trigger: 'blur'
+    },
+    {
+      pattern: /^[a-zA-Z]\w{5,17}$/,
+      message: '字母开头，长度6~18，包含字母、数字和下划线',
+      trigger: 'change'
+    }
+  ],
+  confirmPwd: [
+    {
+      required: true,
+      message: '请确认密码',
+      trigger: 'blur'
+    },
+    {
+      validator: (rule, value, callback) => {
+        if (value !== user.userPwd) {
+          callback(new Error('密码不一致'))
+        } else {
+          callback()
         }
-    ],
-    userPwd: [
-        {
-            required: true,
-            message: '请输入密码',
-            trigger: 'blur'
-        },
-        {
-            pattern: /^[a-zA-Z]\w{5,17}$/,
-            message: '字母开头，长度6~18，包含字母、数字和下划线',
-            trigger: 'change'
-        }
-    ],
-    confirmPwd: [
-        {
-            required: true,
-            message: '请确认密码',
-            trigger: 'blur'
-        },
-        {
-            validator: (rule, value, callback) => {
-                if (value !== user.userPwd) {
-                    callback(new Error('密码不一致'))
-                } else {
-                    callback()
-                }
-            }
-        }
-    ],
-    userMail: [
-        {
-            required: true,
-            message: '请确认密码',
-            trigger: 'blur'
-        },
-        {
-            pattern: /^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/,
-            message: '请输入正确格式的邮箱',
-            trigger: 'change'
-        }
-    ],
-    userCode:[
-        {
-            required: true,
-            message: '请输入验证码',
-            trigger: 'blur'
-        }
-    ]
+      }
+    }
+  ],
+  userMail: [
+    {
+      required: true,
+      message: '请确认密码',
+      trigger: 'blur'
+    },
+    {
+      pattern: /^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/,
+      message: '请输入正确格式的邮箱',
+      trigger: 'change'
+    }
+  ],
+  userCode:[
+    {
+      required: true,
+      message: '请输入验证码',
+      trigger: 'blur'
+    }
+  ]
 }
 
 // 用户注册数据提交
 const handleRegisterSubmit =  () => {
-    registerForm.value.validate(async (valid) => {
-        if (valid) {
-            try {
-                const params =  { ...user }
-                // 删除确认密码额外数据
-                delete params.confirmPwd
-                const res = await request.register(params)
-                if (res) {
-                    ElMessage.success('注册成功')
-                    emit('update:mode', true)
-                }
-            } catch (error) {
-                console.error(error)
-            }
+  registerForm.value.validate(async (valid) => {
+    if (valid) {
+      try {
+        const params =  { ...user }
+        // 删除确认密码额外数据
+        delete params.confirmPwd
+        const res = await request.register(params)
+        if (res) {
+          ElMessage.success('注册成功')
+          emit('update:mode', true)
         }
-    })
+      } catch (error) {
+        console.error(error)
+      }
+    }
+  })
 }
 
 // 父子数据通信
-const props = defineProps({
+defineProps({
   model: Boolean
 })
 
 const emit = defineEmits(['update:mode'])
 
 const { 
-    computeTime,
-    isShow,
-    onClose,
-    handleIsMailEmpty,
-    handleSendCode
+  computeTime,
+  isShow,
+  onClose,
+  handleIsMailEmpty,
+  handleSendCode
 } = useSendCodeEffect(user)
 </script>
 

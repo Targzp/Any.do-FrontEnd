@@ -1,8 +1,8 @@
 /*
  * @Author: 胡晨明
  * @Date: 2021-08-15 21:12:02
- * @LastEditTime: 2021-12-06 18:01:38
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2021-12-23 16:04:12
+ * @LastEditors: 胡晨明
  * @Description: 前端路由配置
  * @FilePath: \bloge:\Vue_store\manager-fe\src\router\index.js
  */
@@ -42,7 +42,7 @@ const routes = [
             children: [
               {
                 name: 'TaskDetail',
-                path: ':taskId',
+                path: ':listId2?/:taskId',
                 meta: {
                   title: '任务描述'
                 },
