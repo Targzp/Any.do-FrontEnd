@@ -1,8 +1,8 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-09-22 20:53:41
- * @LastEditTime: 2021-11-07 19:49:26
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2022-01-14 15:42:19
+ * @LastEditors: 胡晨明
  * @Description: 设置基本账户信息界面组件
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\Setting\Profile.vue
 -->
@@ -237,6 +237,7 @@ const reset = () => {
 // 剪切成功上传图片
 const postImage = async () => {
     const blob = await cropper.getBlob()    // 获取裁剪图片的 blob 对象
+    console.log('blob', blob)
     const formData = new FormData()
     formData.append('Avatar', blob)
     try {

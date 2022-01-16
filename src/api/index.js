@@ -1,8 +1,8 @@
 /*
  * @Author: 胡晨明
  * @Date: 2021-09-18 14:25:16
- * @LastEditTime: 2021-12-13 09:41:32
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2022-01-15 19:56:46
+ * @LastEditors: 胡晨明
  * @Description: 接口汇总
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\api\index.js
  */
@@ -11,7 +11,7 @@ import { getProfile, checkUserName, sendimg, postProfile, postUpdatePassword, po
 import { postUserAdvice } from './modules/feedback'
 import { getCustomSettings, getUserFunctions, getUserTaskDefault, postCustomSettings } from './modules/userSettings'
 import { getUserLists, postUserAddList, postUserDeleteList, postUserEditList } from './modules/lists'
-import { getUserAllTasks, postUserAddTask, postUserUpdateTask } from './modules/tasks'
+import { getUserAllTasks, postUserAddTask, postUserUpdateTask, postUserDeleteTask, postUserBatchDeleteTask, postUserTaskFile, deleteUserTaskFile } from './modules/tasks'
 export default {
   // 注册接口
   register,
@@ -58,5 +58,13 @@ export default {
   // 提交用户添加任务数据接口
   postUserAddTask,
   // 提交用户任务设定值修改数据接口
-  postUserUpdateTask
+  postUserUpdateTask,
+  // 提交删除用户任务数据接口
+  postUserDeleteTask,
+  // 提交批量删除任务数据接口
+  postUserBatchDeleteTask,
+  // 提交用户任务附件接口
+  postUserTaskFile,
+  // 删除用户任务附件接口
+  deleteUserTaskFile
 }

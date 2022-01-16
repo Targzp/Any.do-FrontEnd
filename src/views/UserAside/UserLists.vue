@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-10-26 17:00:23
- * @LastEditTime: 2021-12-25 20:28:12
+ * @LastEditTime: 2021-12-27 13:51:54
  * @LastEditors: 胡晨明
  * @Description: 用户清单界面组件
  * @FilePath: \Node.js_storee:\毕设项目\Anydo-app\src\views\UserAside\UserLists.vue
@@ -26,25 +26,25 @@
                 </div>
             </template>
             <template v-slot:content>
-                <draggable
-                  :list="userLists"
-                  @start="dragging = true" 
-                  @end="dragging = false"
-                  item-key="listId"
-                >
-                  <template #item="{element}">
-                    <div 
-                      class="UserLists__everyList"
-                      v-show="showList"
-                      @click="() => handleListClick(element.listId)"
-                    >
-                      <div>
-                          <span class="UserLists__pattern">{{element.listFlag}}</span>
-                          <span class="UserLists__listName">{{element.listName}}</span>
-                      </div> 
-                    </div>
-                  </template>
-                </draggable>
+              <draggable
+                v-show="showList"
+                :list="userLists"
+                @start="dragging = true" 
+                @end="dragging = false"
+                item-key="listId"
+              >
+                <template #item="{element}">
+                  <div 
+                    class="UserLists__everyList"
+                    @click="() => handleListClick(element.listId)"
+                  >
+                    <div>
+                        <span class="UserLists__pattern">{{element.listFlag}}</span>
+                        <span class="UserLists__listName">{{element.listName}}</span>
+                    </div> 
+                  </div>
+                </template>
+              </draggable>
             </template>
         </listsColumn>
         <!-- 添加清单模态框 -->

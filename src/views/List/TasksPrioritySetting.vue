@@ -2,7 +2,7 @@
  * @Author: 胡晨明
  * @Date: 2021-12-20 14:08:40
  * @LastEditors: 胡晨明
- * @LastEditTime: 2021-12-20 14:47:55
+ * @LastEditTime: 2021-12-28 19:31:11
  * @Description: 任务优先级设定模态框组件
 -->
 <template>
@@ -50,7 +50,7 @@ const taskPrioritys = ref([
 const selectedPriority = ref('')
 watch(() => props.taskPriority, () => {
   selectedPriority.value = props.taskPriority
-})
+}, { immediate: true })
 
 // 模态框偏移量
 const offset = computed(() => {

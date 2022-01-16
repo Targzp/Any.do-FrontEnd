@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-10-12 16:12:01
- * @LastEditTime: 2021-12-25 16:49:21
+ * @LastEditTime: 2021-12-29 17:59:05
  * @LastEditors: 胡晨明
  * @Description: 清单任务组件
  * @FilePath: e:\毕设项目\Anydo-app\src\views\List\Tasks.vue
@@ -15,7 +15,17 @@
           <span class="Tasks__list__header__shrink"><i class="el-icon-s-fold"></i></span>
           <span class="Tasks__list__header__title">{{selectedList.desc}}</span>
         </div>
-        <span class="iconfont Tasks__list__header__other">&#xe618;</span>
+        <span
+          title="共享"
+          class="iconfont Tasks__list__header__other-icon1"
+          v-if="!([0, 1, 2, 3].includes(listId))"
+        >&#xe6c7;</span>
+        <span
+          title="清空"
+          class="iconfont Tasks__list__header__other-icon2"
+          v-if="listId === 3"
+          @click="handleBatchDeleteTask"
+        >&#xe6cc;</span>
       </div>
       <!-- 任务增加区域 -->
       <div
@@ -105,7 +115,7 @@
       <TaskLists :listId="parseInt(route.params.listId)"/>
     </div>
     <!-- 任务详细信息展示区域 -->
-    <div class="Tasks__detail">
+    <div class="Tasks__detail" v-if="showTaskDetail">
       <!-- 没有选中任务时的默认展示 -->
       <div
         class="Tasks__detail__initial"
@@ -114,7 +124,7 @@
         <img src="@/assets/images/点击查看任务.svg" class="Tasks__detail__initial__img"/>
         <span class="Tasks__detail__initial__content">点击任务标题查看详情</span>
       </div>
-        <router-view else></router-view>
+      <router-view else></router-view>
     </div>
     <!-- Modal 区域。随设定任务日期和优先级打开 -->
     <div
@@ -170,6 +180,12 @@ const timeAndDateData = reactive({})
 // 任务添加是否显示标记
 const showAddTask = ref(true)
 
+// 任务详情是否显示标记
+const showTaskDetail = ref(true)
+
+// 清单 id 值
+const listId = ref(0)
+
 //! 获取当前用户选择清单名和flag
 const selectedList = reactive({
   desc: '',
@@ -178,35 +194,43 @@ const selectedList = reactive({
 watch(
   () => route.params.listId, 
   (val) => {
-    const listId = parseInt(val)
+    // 获取当前清单 Id 值
+    listId.value = parseInt(val)
     
-    if (listId === 2 || listId === 3) {
+    // 如果是已完成和垃圾桶界面则不显示任务输入框
+    if (listId.value === 2 || listId.value === 3) {
       showAddTask.value = false
     } else {
       showAddTask.value = true
+    }
+
+    if (listId.value === 3) {
+      showTaskDetail.value = false
+    } else {
+      showTaskDetail.value = true
     }
 
     // listId 一旦变化当前输入任务进行同步清空
     if (newTask.taskInfo) {
       newTask.taskInfo = ''
     }
-    
+
     // 如果 listId 为 all
-    if ([0,1,2,3].includes(listId)) {
+    if ([0, 1, 2, 3].includes(listId.value)) {
       let descDic = {
         0: '所有',
         1: '今天',
         2: '已完成',
         3: '垃圾桶'
       }
-      selectedList.desc = descDic[listId]
+      selectedList.desc = descDic[listId.value]
       selectedList.placeHolder = '添加任务'
       return
     }
 
     // 根据 listId 在清单中寻找对应清单
     userLists.forEach((list) => {
-      if (list.listId === listId) {
+      if (list.listId === listId.value) {
         selectedList.desc = `${list.listFlag} ${list.listName}`
         selectedList.placeHolder = `添加任务至 ${list.listName}`
       }
@@ -318,9 +342,6 @@ const handleAddTask = () => {
   // 获取当前所选清单清单名
   const listName = selectedList.desc.split(' ')[1]
 
-  // 获取当前 listId
-  const listId = parseInt(route.params.listId)
-
   // 检查是否输入任务
   if (!newTask.taskInfo) {
     ElMessage.warning('请输入任务!')
@@ -328,7 +349,7 @@ const handleAddTask = () => {
   }
 
   // 如果 listId 为 all 则打开清单列表供用户选择
-  if (listId === 0 || listId === 1) {
+  if (listId.value === 0 || listId.value === 1) {
     selectListTrigger.value = true
     return
   }
@@ -338,7 +359,7 @@ const handleAddTask = () => {
     confirmButtonText: '确认',
     type: 'warning',
   }).then(async () => {
-    await handleSubmitTask(listId)
+    await handleSubmitTask(listId.value)
   }).catch((err) => {
     console.log(err)
     return
@@ -367,6 +388,31 @@ const handleSubmitTask = async (listId) => {
 // 选择清单模态框关闭操作
 const handleCloseDialog = () => {
   disable.value = false
+}
+
+//! 任务批量永久删除逻辑区域
+// 用户任务批量删除
+const handleBatchDeleteTask = () => {
+  ElMessageBox.confirm(
+    '请确认是否永久删除全部任务',
+    '确认框',
+    {
+      confirmButtonText: '确认',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }
+  ).then(() => {
+    const ids = []
+    const ltIds = []
+    userTasks.forEach((item) => {
+      ids.push(item.id)
+      ltIds.push({ listId: item.listId, taskId: item.taskId })
+    })
+
+    store.dispatch('batchDeleteUserTask', { ids, ltIds })
+  }).catch(() => {
+    return
+  })
 }
 
 //! 获取任务默认值逻辑区域
@@ -413,6 +459,14 @@ const handleCloseDialog = () => {
         margin-right: .1rem;
         cursor: pointer;
         color: $icon-color;
+      }
+
+      &__other-icon1 {
+        font-size: .2rem;
+      }
+
+      &__other-icon2 {
+        font-size: .28rem;
       }
     }
 

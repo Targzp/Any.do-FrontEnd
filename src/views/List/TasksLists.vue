@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-12-02 14:10:07
- * @LastEditTime: 2021-12-23 23:46:27
+ * @LastEditTime: 2021-12-29 15:18:36
  * @LastEditors: 胡晨明
  * @Description: 任务列表组件
  * @FilePath: \Anydo-app\src\views\List\TasksLists.vue
@@ -30,17 +30,36 @@
                 ]"
                 @mouseenter="enterTaskId = element.id"
                 @mouseleave="enterTaskId = -1"
-                @click="() => { handleCheckTaskInfo(element.id, element.listId, element.taskId) }"
-                v-if="element.task && !element.task.doneFlag"
               >
                 <el-checkbox
+                  v-if="syncListId !== 3"
                   size="medium"
                   class="doneCheck"
-                  @change="() => { handleCompleteTask({id: element.id, listId: element.listId, taskId: element.taskId, flag: 'done', value: 1}) }"
+                  @change="() => { handleCompleteTask({ id: element.id, listId: element.listId, taskId: element.taskId, flag: 'done', value: 1 }) }"
                 />
-                <span class="taskInfo">{{element.task && element.task.taskInfo}}</span>
+                <div
+                  class="optLink"
+                  v-else
+                >
+                  <el-link
+                    type="primary"
+                    :underline="false"
+                    class="optLink__delete"
+                    @click="() => { handleDeleteTask({ id: element.id, listId: element.listId, taskId: element.taskId }) }"
+                  >删除</el-link>
+                  <el-link
+                    type="primary"
+                    :underline="false"
+                    class="optLink__reset"
+                    @click="() => { handleRevertTask({ id: element.id, listId: element.listId, taskId: element.taskId, flag: 'softDel', value: 0 }) }"
+                  >还原</el-link>
+                </div>
                 <span
-                  v-if="syncListId === 1"
+                  class="taskInfo"
+                  @click="() => { handleCheckTaskInfo(element.id, element.listId, element.taskId) }"
+                >{{element.task && element.task.taskInfo}}</span>
+                <span
+                  v-if="syncListId === 1 || syncListId === 3"
                   class="listInfo"
                   @click.self="() => { handleGotoList(element.listId) }"
                 >{{handleTaskList(element.listId)}}</span>
@@ -68,21 +87,23 @@
               <template #item="{element}">
                 <div>
                   <div
-                    v-if="element.listId === list.listId && showLists[list.listId] && element.task && !element.task.doneFlag"
+                    v-if="element.listId === list.listId && showLists[list.listId]"
                     :class="[
                       'taskLists__allTasks__task', 
                       { 'selectedStyle':  enterTaskId === element.id || selectedTaskId === element.id}
                     ]"
                     @mouseenter="enterTaskId = element.id"
                     @mouseleave="enterTaskId = -1"
-                    @click="() => { handleCheckTaskInfo(element.id, element.listId, element.taskId) }"
                   >
                     <el-checkbox
                       size="medium"
                       class="doneCheck"
-                      @change="() => { handleCompleteTask({id: element.id, listId: element.listId, taskId: element.taskId, flag: 'done', value: 1}) }"
+                      @change="() => { handleCompleteTask({ id: element.id, listId: element.listId, taskId: element.taskId, flag: 'done', value: 1 }) }"
                     />
-                    <span class="taskInfo">{{element.task && element.task.taskInfo}}</span>
+                    <span
+                      class="taskInfo"
+                      @click="() => { handleCheckTaskInfo(element.id, element.listId, element.taskId) }"
+                    >{{element.task && element.task.taskInfo}}</span>
                   </div>
                 </div>
               </template>
@@ -116,7 +137,6 @@
                     ]"
                     @mouseenter="enterTaskId = element.id"
                     @mouseleave="enterTaskId = -1"
-                    @click="() => { handleCheckTaskInfo(element.id, element.listId, element.taskId) }"
                   >
                     <el-checkbox
                       size="medium"
@@ -124,7 +144,10 @@
                       checked
                       @change="() => { handleCompleteTask({id: element.id, listId: element.listId, taskId: element.taskId, flag: 'done', value: 0, extValue: doneTask.doneTime}) }"
                     />
-                    <span class="taskInfo">{{element.task && element.task.taskInfo}}</span>
+                    <span
+                      class="taskInfo"
+                      @click="() => { handleCheckTaskInfo(element.id, element.listId, element.taskId) }"
+                    >{{element.task && element.task.taskInfo}}</span>
                     <span
                       class="listInfo"
                     >{{handleTaskList(element.listId)}}</span>
@@ -150,6 +173,7 @@ import { useRouter } from 'vue-router'
 import draggable from 'vuedraggable'
 import listsColumn from '@/components/listsColumn.vue'
 import dayjs from 'dayjs'
+import { ElMessageBox } from 'element-plus'
 
 const router = useRouter()
 
@@ -216,17 +240,47 @@ const handleTaskList = (listId) => {
 
 // 查看今天任务下点击任务清单信息跳转到指定清单
 const handleGotoList = (listId) => {
-  router.push({ path: `/list/${listId}/tasks` })
+  // 如果是垃圾桶界面则不进行清单跳转
+  if (syncListId.value !== 3) {
+    router.push({ path: `/list/${listId}/tasks` })
+  }
 }
 
 // 点击指定任务查看任务信息
 const handleCheckTaskInfo = (id, listId, taskId) => {
   selectedTaskId.value = id
+  // 所有、今天、已完成任务列表显示任务详情跳转方式
   if (syncListId.value === 0 || syncListId.value === 1 || syncListId.value === 2) {
     router.push({ path: `/list/${syncListId.value}/tasks/${listId}/${taskId}` })
+  // 垃圾桶任务列表不跳转至任务详情
+  } else if (syncListId.value === 3) {
+    return
+  // 指定清单任务列表显示任务详情跳转方式
   } else {
     router.push({ path: `/list/${syncListId.value}/tasks/${taskId}` })
   }
+}
+
+// 点击已软删除任务进行硬（即永久）删除
+const handleDeleteTask = (deleteValues) => {
+  ElMessageBox.confirm(
+    '请确认是否永久删除该任务',
+    '确认框',
+    {
+      confirmButtonText: '确认',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }
+  ).then(() => {
+    store.dispatch('deleteUserTask', deleteValues)
+  }).catch(() => {
+    return
+  })
+}
+
+// 点击已软删除任务进行还原
+const handleRevertTask = (settingValues) => {
+  store.dispatch('setUserTask', settingValues)
 }
 
 // 获取全部任务列表
@@ -255,8 +309,18 @@ const handleCheckTaskInfo = (id, listId, taskId) => {
       cursor: pointer;
       transition: .2s ease;
 
-      .doneCheck {
+      .doneCheck, .optLink {
         margin: 0 .06rem 0 .08rem;
+      }
+
+      .optLink {
+        &__delete, &__reset {
+          font-size: .13rem;
+        }
+
+        &__delete {
+          margin-right: .05rem;
+        }
       }
 
       .taskInfo {

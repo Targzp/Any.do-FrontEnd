@@ -1,8 +1,8 @@
 /*
  * @Author: 胡晨明
  * @Date: 2021-12-01 23:09:10
- * @LastEditTime: 2021-12-14 14:13:59
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2022-01-16 14:34:08
+ * @LastEditors: 胡晨明
  * @Description: 用户任务状态管理
  * @FilePath: \Anydo-app\src\store\modules\tasks.js
  */
@@ -40,26 +40,132 @@ const mutations = {
   /**
    * @description: 已完成或删除的任务数据从当前缓存中去除
    * @param {*} state
-   * @param {*} task
+   * @param {*} settingValues
    */
-  removeUserTask (state, { taskId, flag, value, extValue }) {
-    // value 值为 1 表示已完成或者已软删除
-    if (value === 1) {
-      const taskIndex = state.userTasks.findIndex(task => task.taskId === taskId)
+  removeUserTask (state, { id, listId, taskId, flag, value, extValue }) {
+    if ((flag === 'done' && value === 1) || (flag === 'softDel' && !extValue)) {
+      const taskIndex = state.userTasks.findIndex(task => task.id === id)
       state.userTasks.splice(taskIndex, 1)
-    // value 值为 0 表示已完成任务还原或者软删除任务还原
-    } else {
-      // 如果是已完成任务还原
-      if (flag === 'done') {
-        const doneTasks = state.userTasks.find(task => task.doneTime === extValue)
-        const doneTasksIndex = state.userTasks.findIndex(task => task.doneTime === extValue)
-        const taskIndex = doneTasks.tasks.findIndex(task => task.taskId === taskId)
-        doneTasks.tasks.splice(taskIndex, 1)
-        if (doneTasks.tasks.length === 0) {
-          state.userTasks.splice(doneTasksIndex, 1)
-        }
-      // 如果是软删除任务还原
+    } else if ((flag === 'done' && value === 0) || (flag === 'softDel' && extValue)) {
+      const doneTasks = state.userTasks.find(task => task.doneTime === extValue)
+      const doneTasksIndex = state.userTasks.findIndex(task => task.doneTime === extValue)
+      const taskIndex = doneTasks.tasks.findIndex(task => task.id === id)
+      doneTasks.tasks.splice(taskIndex, 1)
+      if (doneTasks.tasks.length === 0) {
+        state.userTasks.splice(doneTasksIndex, 1)
       }
+    }
+  },
+  /**
+   * @description: 已软删除任务数据进行永久删除后从当前缓存中去除
+   * @param {*} state
+   * @param {*} deleteValues
+   */
+  deleteUserTask (state, { id }) {
+    const index = state.userTasks.findIndex(task => task.id === id)
+    state.userTasks.splice(index, 1)
+  },
+  /**
+   * @description: 永久删除所有已软删除的任务数据
+   * @param {*} state
+   */
+  batchDeleteUserTask (state) {
+    state.userTasks.splice(0, state.userTasks.length)
+  },
+  /**
+   * @description: 设置用户缓存任务相关值
+   * @param {*} state
+   */
+  setUserTask (state, { id, flag, value, extValue }) {
+    const flagDics = {
+      setTaskInfo: 'taskInfo',
+      setTaskDesc: 'taskDesc',
+      setTaskPriority: 'taskPriority',
+      setTaskFile: 'taskFile'
+    }
+    switch (flag) {
+    case 'setList': {
+      state.userTasks.forEach(item => {
+        if (item.id === id) {
+          item.listId = value
+        }
+      })
+      break
+    }
+    case 'resetId': {
+      state.userTasks.forEach(item => {
+        if (item.id === id) {
+          item.taskId = value
+          item.task.taskId = value
+        }
+      })
+      break
+    }
+    case 'setTaskInfo':
+    case 'setTaskDesc':
+    case 'setTaskFile':
+    case 'setTaskPriority': {
+      if (extValue) {
+        state.userTasks.forEach(item => {
+          if (item.doneTime === extValue) {
+            item.tasks.forEach(doneTask => {
+              if (doneTask.id === id) {
+                doneTask.task[flagDics[flag]] = value
+              }
+            })
+          }
+        })
+      } else {
+        state.userTasks.forEach(item => {
+          if (item.id === id) {
+            item.task[flagDics[flag]] = value
+          }
+        })
+      }
+      break
+    }
+    case 'setTaskGeneral': {
+      if (extValue) {
+        state.userTasks.forEach(item => {
+          if (item.doneTime === extValue) {
+            item.tasks.forEach(doneTask => {
+              if (doneTask.id === id) {
+                Object.assign(doneTask, value)
+              }
+
+              if (value.subFlag === 'quantum') {
+                doneTask.taskDate = ''
+                doneTask.taskTime = ''
+              } else if (value.subFlag === 'date') {
+                doneTask.startTaskDate = ''
+                doneTask.startTaskTime = ''
+                doneTask.endTaskDate = ''
+                doneTask.endTaskTime = ''
+              }
+            })
+          }
+        })
+      } else {
+        state.userTasks.forEach(item => {
+          if (item.id === id) {
+            Object.assign(item, value)
+          }
+
+          if (value.subFlag === 'quantum') {
+            item.taskDate = ''
+            item.taskTime = ''
+          } else if (value.subFlag === 'date') {
+            item.startTaskDate = ''
+            item.startTaskTime = ''
+            item.endTaskDate = ''
+            item.endTaskTime = ''
+          }
+        })
+      }
+      break
+    }
+    default:
+      break;
     }
   }
 }
@@ -99,11 +205,9 @@ const actions = {
 
       for (let params of dbParams) {
         try {
-          // 如果之前已存过对应任务数据则不存储
-          const res = await db.tasks.where({ listId: params.listId, taskId: params.taskId })
-          if (!res) {
-            await db.tasks.add(params)
-          }
+          //? 如果之前已存过对应任务数据则不存储
+          // const res = await db.tasks.where({ listId: params.listId, taskId: params.taskId })
+          await db.tasks.add(params)
         } catch (error) {
           console.log(`${error}`)
         }
@@ -133,10 +237,10 @@ const actions = {
 
     if (listId === 0) {
       // 缓存所有清单任务集合
-      tasks = await db.tasks.filter((value) => !value.task.doneFlag).toArray()
+      tasks = await db.tasks.filter((value) => (!value.task.doneFlag && !value.task.softDelFlag)).toArray()
     } else if (listId === 1) {
       // 缓存当天清单任务集合
-      const allTasks = await db.tasks.filter((value) => !value.task.doneFlag).toArray()
+      const allTasks = await db.tasks.filter((value) => (!value.task.doneFlag && !value.task.softDelFlag)).toArray()
       const filterTasks = []
       // 获取今天的开始和结束时间戳
       const todayStart = dayjs().startOf('day').valueOf() + ''
@@ -165,10 +269,11 @@ const actions = {
       let doneTimes = []  // 已完成任务时间集合
       const allDoneTasksOrg = []
       const allDoneTasks = await db.tasks.filter(value => {
-        if (value.task.doneTime) {
+        //* 接下来的逻辑都是对已完成且没有被软删除数据进行提取（已完成时间和任务）
+        if (value.task.doneTime && !value.task.softDelFlag) {
           doneTimes.push(value.task.doneTime)
         }
-        return !!value.task.doneFlag
+        return !!value.task.doneFlag && !value.task.softDelFlag
       }).toArray()  // 所有已完成任务集合
       doneTimes = [...new Set(doneTimes)] // 去重相同的任务时间
       doneTimes.forEach((doneTime) => {
@@ -182,10 +287,13 @@ const actions = {
         allDoneTasksOrg.push(param)
       })
       tasks = allDoneTasksOrg
+    } else if (listId === 3) {
+      // 缓存软删除任务集合
+      tasks = await db.tasks.filter((value) => !!value.task.softDelFlag).toArray()
     } else {
       // 缓存指定 listId 清单任务集合
       tasks = await db.tasks.filter((value) => {
-        return value.listId === listId && !value.task.doneFlag
+        return value.listId === listId && !value.task.doneFlag && !value.task.softDelFlag
       }).toArray()
     }
 
@@ -197,19 +305,19 @@ const actions = {
   async setUserTask({ commit }, settingValues) {
     try {
       let res
-      let { id, taskId, flag, value } = settingValues
+      let { id, listId, taskId, flag, value, extValue } = settingValues
       switch (flag) {
       // 已完成/已完成还原
       case 'done': {
         let doneTime
         //* 如果 value 为 0，意味着要使已完成任务还原。此时要获取 doneTime，将已完成任务列表里对应日期下的某个任务还原
         if (!value) {
-          doneTime = settingValues.extValue
-          settingValues.extValue = ''
+          doneTime = extValue
+          extValue = ''
         }
-        res = await db.tasks.update(id, { 'task.doneFlag': value, 'task.doneTime': settingValues.extValue })
+        res = await db.tasks.update(id, { 'task.doneFlag': value, 'task.doneTime': extValue })
         if (res) {
-          commit('removeUserTask', { taskId, flag, value, extValue: doneTime })
+          commit('removeUserTask', { id, taskId, flag, value, extValue: doneTime })
         }
         break
       }
@@ -217,7 +325,78 @@ const actions = {
       case 'softDel': {
         res = await db.tasks.update(id, { 'task.softDelFlag': value })
         if (res) {
-          commit('removeUserTask', { taskId, flag, value })
+          commit('removeUserTask', { id, listId, taskId, flag, value, extValue })
+        }
+        break
+      }
+      // 更改任务所属清单
+      case 'setList': {
+        res = await db.tasks.update(id, { listId: value })
+        if (res) {
+          commit('setUserTask', { id, flag, value })
+        }
+        break
+      }
+      // 更改任务标题信息
+      case 'setTaskInfo': {
+        res = await db.tasks.update(id, { 'task.taskInfo': value })
+        if (res) {
+          commit('setUserTask', { id, flag, value, extValue })
+        }
+        break
+      }
+      // 更改任务描述信息
+      case 'setTaskDesc': {
+        res = await db.tasks.update(id, { 'task.taskDesc': value })
+        if (res) {
+          commit('setUserTask', { id, flag, value, extValue })
+        }
+        break
+      }
+      // 更改任务优先级
+      case 'setTaskPriority': {
+        res = await db.tasks.update(id, { 'task.taskPriority': value })
+        if (res) {
+          commit('setUserTask', { id, flag, value, extValue })
+        }
+        break
+      }
+      // 更改任务通用设定（日期、时间段模式、通知提醒）
+      case 'setTaskGeneral': {
+        if (value.subFlag === 'quantum') {
+          res = await db.tasks.update(id, {
+            'task.taskDate': '',
+            'task.taskTime': '',
+            'task.startTaskDate': value.startTaskDate,
+            'task.startTaskTime': value.startTaskTime,
+            'task.endTaskDate': value.endTaskDate,
+            'task.endTaskTime': value.endTaskTime,
+            'task.notify': value.notify
+          })
+        } else if (value.subFlag === 'date') {
+          res = await db.tasks.update(id, {
+            'task.taskDate': value.taskDate,
+            'task.taskTime': value.taskTime,
+            'task.startTaskDate': '',
+            'task.startTaskTime': '',
+            'task.endTaskDate': '',
+            'task.endTaskTime': '',
+            'task.notify': value.notify
+          })
+        } else {
+          res = await db.tasks.update(id, {
+            'task.startTaskDate': value.startTaskDate,
+            'task.startTaskTime': value.startTaskTime,
+            'task.endTaskDate': value.endTaskDate,
+            'task.endTaskTime': value.endTaskTime,
+            'task.taskDate': value.taskDate,
+            'task.taskTime': value.taskTime,
+            'task.notify': value.notify
+          })
+        }
+
+        if (res) {
+          commit('setUserTask', { id, flag, value, extValue })
         }
         break
       }
@@ -225,9 +404,70 @@ const actions = {
         break
       }
 
-      await request.postUserUpdateTask(settingValues)
+      res = await request.postUserUpdateTask(settingValues)
+      // 更换任务所属清单后，任务的 id 值可能会发生变化，需重置
+      if (typeof res === 'number') {
+        await db.tasks.update(id, { taskId: res, 'task.taskId': res })
+        commit('setUserTask', { id, flag: 'resetId', value: res })
+      }
     } catch (error) {
       console.log(`${error}`)
+    }
+  },
+  /**
+   * @description: 异步删除任务数据
+   */
+  async deleteUserTask({ commit }, deleteValues) {
+    try {
+      const { id } = deleteValues
+      await db.tasks.delete(id)
+      commit('deleteUserTask', deleteValues)
+      
+      await request.postUserDeleteTask(deleteValues)
+    } catch (error) {
+      console.log(`${error}`)
+    }
+  },
+  /**
+   * @description: 异步删除全部任务数据
+   */
+  async batchDeleteUserTask({ commit }, deleteValues) {
+    try {
+      const { ids } = deleteValues
+      await db.tasks.bulkDelete(ids)
+      commit('batchDeleteUserTask')
+
+      await request.postUserBatchDeleteTask(deleteValues)
+    } catch (error) {
+      console.log(`${error}`)
+    }
+  },
+  /**
+   * @description: 异步上传任务附件数据
+   */
+  async uploadUserTaskFile({ commit }, { id, listId, taskId, formData, beforeFileFlag, extValue }) {
+    try {
+      const res = await request.postUserTaskFile({ formData, beforeFileFlag, listId, taskId })
+
+      await db.tasks.update(id, { 'task.taskFile': res })
+
+      commit('setUserTask', { id, value: res, flag: 'setTaskFile', extValue })
+    } catch (error) {
+      throw error
+    }
+  },
+  /**
+   * @description: 异步删除任务附件数据
+   */
+  async deleteUserTaskFile({ commit }, { id, listId, taskId, value, extValue }) {
+    try {
+      await db.tasks.update(id, { 'task.taskFile': {} })
+
+      commit('setUserTask', { id, value: {}, flag: 'setTaskFile', extValue })
+
+      await request.deleteUserTaskFile({ listId, taskId, value })
+    } catch (error) {
+      throw error
     }
   }
 }

@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-10-12 16:12:41
- * @LastEditTime: 2021-12-25 23:50:13
+ * @LastEditTime: 2022-01-16 23:41:19
  * @LastEditors: 胡晨明
  * @Description: 查看任务详细信息组件
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\List\TaskDetail.vue
@@ -14,6 +14,8 @@
         <el-checkbox
           size="medium"
           class="doneCheck"
+          :checked="!!subViewTask.doneFlag"
+          @change="() => { handleCompleteTask() }"
         />
         <div class="date">
           <div
@@ -50,31 +52,63 @@
     </div>
     <!-- 任务详情设置区域 -->
     <div class="TaskInfo__taskMain">
-      <div class="TaskInfo__taskMain__taskTitle">
-        {{subViewTask.taskInfo}}
+      <div
+        class="TaskInfo__taskMain__taskTitle"
+        @click="handleEditTaskInfo"
+      >
+        <span v-if="!isEditTaskInfo">{{subViewTask.taskInfo}}</span>
+        <el-input
+          v-else
+          ref="taskInfoInput"
+          class="taskInfoInput"
+          v-model="subViewTask.taskInfo"
+          @change="() => { handleCompleteTaskEdit('taskInfo') }"
+        />
       </div>
       <div class="TaskInfo__taskMain__taskContentWrapper">
         <el-scrollbar>
-          <div class="TaskInfo__taskMain__taskContent">
-            <span v-if="subViewTask.taskDesc">{{subViewTask.taskDesc}}</span>
+          <div
+            class="TaskInfo__taskMain__taskContent"
+            @click="handleEditTaskDesc"
+          >
+            <span
+              v-if="subViewTask.taskDesc && !isEditTaskDesc"
+            >{{subViewTask.taskDesc}}</span>
+            <el-input
+              type="textarea"
+              v-else-if="isEditTaskDesc"
+              ref="taskDescInput"
+              class="taskDescInput"
+              v-model="subViewTask.taskDesc"
+              @blur="() => { handleCompleteTaskEdit('taskDesc') }"
+            />
             <span 
-              v-else
+              v-else-if="!subViewTask.taskDesc"
               class="TaskInfo__taskMain__taskContent__tips"
             >任务的一些具体描述</span>
           </div>
-          <div class="TaskInfo__taskMain__taskFiles">
+          <div
+            v-if="!(_.isEmpty(subViewTask.taskFile))"
+            class="TaskInfo__taskMain__taskFiles"
+          >
             <div class="iconfont fileIcon">&#xe61e;</div>
             <div class="fileInfo">
-              <div class="fileInfo__title">任务文件</div>
-              <div class="fileInfo__size">200K</div>
+              <div class="fileInfo__title">{{subViewTask.taskFile.fileName}}</div>
+              <div class="fileInfo__size">{{subViewTask.taskFile.fileSize}}K</div>
             </div>
             <el-dropdown class="fileSetting" trigger="click">
               <div class="iconfont">&#xe618;</div>
               <template #dropdown>
                 <el-dropdown-menu>
-                  <el-dropdown-item>预览文件</el-dropdown-item>
-                  <el-dropdown-item>下载文件</el-dropdown-item>
-                  <el-dropdown-item>删除文件</el-dropdown-item>
+                  <el-dropdown-item
+                    @click="handlePreviewFile"
+                  >预览文件</el-dropdown-item>
+                  <el-dropdown-item
+                    @click="handleDonloadFile"
+                  >下载文件</el-dropdown-item>
+                  <el-dropdown-item
+                    @click="handleDeleteFile"
+                  >删除文件</el-dropdown-item>
                 </el-dropdown-menu>
               </template>
             </el-dropdown>
@@ -87,50 +121,69 @@
       <div
         class="TaskInfo__taskFooter__taskList"
         @click="handleShowTaskList"
-      >🏠 个人清单</div>
+      >{{subViewListInfo}}</div>
       <el-dropdown class="TaskInfo__taskFooter__taskSetting" trigger="click">
         <div class="iconfont">&#xe618;</div>
         <template #dropdown>
           <el-dropdown-menu>
-            <el-dropdown-item>上传附件</el-dropdown-item>
+            <el-dropdown-item>
+              <el-upload
+                action=""
+                :show-file-list="false"
+                :before-upload="beforeFileUpload"
+                name="File"
+              >
+                <span>上传附件</span>
+              </el-upload>
+            </el-dropdown-item>
             <el-dropdown-item>任务动态</el-dropdown-item>
             <el-dropdown-item @click="handleDeleteTask">删除任务</el-dropdown-item>
           </el-dropdown-menu>
         </template>
       </el-dropdown>
+      <!-- 选择清单列表模态框 -->
       <div
         class="TaskInfo__taskFooter__lists"
-        v-show="showTaskList"
+        v-show="showTaskList && route.params.listId !== '2'"
       >
         <el-scrollbar>
           <div
             v-for="item in userLists"
             :key="item.listId"
             class="listItem"
+            @click="() => { handleSelectList(item) }"
           >
             {{`${item.listFlag} ${item.listName}`}}
           </div>
         </el-scrollbar>
       </div>
     </div>
-    <!-- Modal 区域。随设定任务日期和优先级打开 -->
+    <!-- Modal 区域 1：随设定任务日期和优先级打开 -->
     <div
       v-show="showTaskSetting || showTaskPriority || showTaskList"
       class="modal"
       @click="() => { handleCloseTaskSettings() }"
     ></div>
+    <!-- Modal 区域 2：任务动态 -->
+    <el-dialog
+      v-model="developmentVisible"
+      title="任务动态"
+      width="300px"
+    >
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import _ from 'lodash'
 import dayjs from 'dayjs'
 import TasksPrioritySetting from './TasksPrioritySetting.vue'
 import TasksGeneralSetting from './TasksGeneralSetting.vue'
 import request from '@/api/index'
-import { ElMessageBox } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { Base64 } from 'js-base64';
 
 // 状态管理仓库
 const store = useStore()
@@ -141,6 +194,9 @@ const route = useRoute()
 const taskId = computed(() => {
   return parseInt(route.params.taskId)  // 转换为数值类型
 })
+
+// 路由跳转对象
+const router = useRouter()
 
 // 清单列表
 const userLists = store.state.lists.userLists
@@ -153,13 +209,16 @@ const userTasks = store.state.tasks.userTasks
 const subViewTask = reactive({})
 // 选定任务数据ID值
 const subViewTaskId = ref(0)
+// 选定任务所属清单信息
+const subViewListInfo = ref('')
 
 // 根据路由的 taskId 和 listId 值获取指定任务数据
 const getTaskData = async () => {
   const listId = parseInt(route.params.listId)
   const listId2 = parseInt(route.params.listId2)
-  let task
-  if (listId === 0 || listId === 1) {
+  let task = {}
+  // 获取选定任务数据及 ID 值
+  if ([0, 1, 3].includes(listId)) {
     userTasks.forEach(item => {
       if (item.taskId === taskId.value && item.listId === listId2) {
         task = item.task
@@ -168,6 +227,9 @@ const getTaskData = async () => {
     })
   } else if (listId === 2) {
     userTasks.forEach(doneTasks => {
+      if (!doneTasks) {
+        return
+      }
       doneTasks.tasks.forEach(doneTask => {
         if (doneTask.taskId === taskId.value && doneTask.listId === listId2) {
           task = doneTask.task
@@ -183,6 +245,22 @@ const getTaskData = async () => {
       }
     })
   }
+
+  // 获取选定任务清单信息
+  if ([0, 1, 2, 3].includes(listId)) {
+    userLists.forEach(item => {
+      if (item.listId === listId2) {
+        subViewListInfo.value = item.listFlag + ' ' + item.listName
+      }
+    })
+  } else {
+    userLists.forEach(item => {
+      if (item.listId === listId) {
+        subViewListInfo.value = item.listFlag + ' ' + item.listName
+      }
+    })
+  }
+
   // 深拷贝选定任务
   task = _.cloneDeep(task)
   // 将字符串类型时间戳转换为数值类型
@@ -191,6 +269,15 @@ const getTaskData = async () => {
       task[key] = task[key] ? new Date(parseInt(task[key])) : task[key]
     }
   }
+
+  if (!task.taskDesc) {
+    delete subViewTask.taskDesc
+  }
+
+  if (!task.taskFile) {
+    delete subViewTask.taskFile
+  }
+
   Object.assign(subViewTask, task)
 }
 // 获取指定任务数据。当其中 taskId 和 userTasks 响应式数据发生变化则重新执行该函数
@@ -205,6 +292,10 @@ const taskDateFormat = computed(() => {
     return ''
   }
 
+  if (!subViewTask.startTaskDate && !subViewTask.taskDate) {
+    return '未设定任务日期'
+  }
+
   if (!subViewTask.startTaskDate) {
     // 日期模式解析
     const taskDate = dayjs(subViewTask.taskDate)
@@ -215,6 +306,9 @@ const taskDateFormat = computed(() => {
     return `${day} ${paFlag} ${time}`
   } else {
     // 时间段模式解析
+    if (typeof subViewTask.startTaskDate === 'string') {
+      subViewTask.startTaskDate = new Date(parseInt(subViewTask.startTaskDate))
+    }
     const startTaskDate = dayjs(subViewTask.startTaskDate)
     const startTaskTime = dayjs(subViewTask.startTaskTime)
     const day1 = startTaskDate.format('M月D日')
@@ -223,6 +317,9 @@ const taskDateFormat = computed(() => {
     if (!subViewTask.endTaskDate) {
       return `${day1} ${paFlag1} ${time1}-`
     } else {
+      if (typeof subViewTask.endTaskDate === 'string') {
+        subViewTask.endTaskDate = new Date(parseInt(subViewTask.endTaskDate))
+      }
       const endTaskDate = dayjs(subViewTask.endTaskDate)
       const endTaskTime = dayjs(subViewTask.endTaskTime)
       const day2 = endTaskDate.format('M月D日')
@@ -244,9 +341,115 @@ const handleShowTaskSetting = () => {
   showTaskSetting.value = !showTaskSetting.value
 }
 
+// 点击完成任务或还原完成任务
+const handleCompleteTask = () => {
+  const id = subViewTaskId.value
+  const taskIdVal = taskId.value
+  let listId = parseInt(route.params.listId2 || route.params.listId)
+  const settingValues = {
+    id,
+    taskId: taskIdVal,
+    listId,
+    flag: 'done',
+    value: subViewTask.doneFlag ? 0 : 1
+  }
+  if (settingValues.value) {
+    settingValues.extValue = dayjs().startOf('day').valueOf() + ''  // 设置任务结束日期时间戳
+  } else {
+    settingValues.extValue = subViewTask.doneTime
+  }
+  store.dispatch('setUserTask', settingValues).then(() => {
+    router.back()
+  })
+}
+
 // 任务更新后保存
-const handleSaveTaskSetting = (subViewTask) => {
-  console.log(subViewTask)
+const handleSaveTaskSetting = (settingTask) => {
+  const id = subViewTaskId.value
+  const taskIdVal = taskId.value
+  let listId = parseInt(route.params.listId2 || route.params.listId)
+
+  let quantumModeObj = null
+  let dateModeObj = null
+  let modeObj = null
+
+  //* 原日期模式改为时间段模式
+  if (subViewTask.taskDate && settingTask.startTaskDate) {
+    subViewTask.taskDate = ''
+    subViewTask.taskTime = ''
+
+    quantumModeObj = _.pick(settingTask, [
+      'startTaskDate',
+      'startTaskTime',
+      'endTaskDate',
+      'endTaskTime',
+      'notify'
+    ])
+
+    Object.assign(subViewTask, quantumModeObj)
+    for (let key in quantumModeObj) {
+      if (quantumModeObj[key] instanceof Date) {
+        quantumModeObj[key] = quantumModeObj[key].valueOf() + ''
+      } else {
+        quantumModeObj[key] = quantumModeObj[key] + ''
+      }
+    }
+    quantumModeObj.subFlag = 'quantum'  //* 子 Flag，标识修改了哪个模式下的值
+  //* 原时间段模式改为日期模式
+  } else if (subViewTask.startTaskDate && settingTask.taskDate) {
+    subViewTask.startTaskDate = ''
+    subViewTask.startTaskTime = ''
+    subViewTask.endTaskDate = ''
+    subViewTask.endTaskTime = ''
+
+    dateModeObj = _.pick(settingTask, [
+      'taskDate',
+      'taskTime',
+      'notify'
+    ])
+
+    Object.assign(subViewTask, dateModeObj)
+    for (let key in dateModeObj) {
+      if (dateModeObj[key] instanceof Date) {
+        dateModeObj[key] = dateModeObj[key].valueOf() + ''
+      } else {
+        dateModeObj[key] = dateModeObj[key] + ''
+      }
+    }
+    dateModeObj.subFlag = 'date'
+  //* 未进行模式更改
+  } else {
+    modeObj = _.pick(settingTask, [
+      'startTaskDate',
+      'startTaskTime',
+      'endTaskDate',
+      'endTaskTime',
+      'taskDate',
+      'taskTime',
+      'notify'
+    ])
+
+    Object.assign(subViewTask, modeObj)
+    for (let key in modeObj) {
+      if (modeObj[key] instanceof Date) {
+        modeObj[key] = modeObj[key].valueOf() + ''
+      } else {
+        modeObj[key] = modeObj[key] + ''
+      }
+    }
+    modeObj.subFlag = 'none'
+  }
+
+  handleShowTaskSetting() // 关闭任务通用设置模态框
+
+  store.dispatch('setUserTask', {
+    id,
+    taskId: taskIdVal,
+    listId,
+    flag: 'setTaskGeneral',
+    value: quantumModeObj || dateModeObj || modeObj,
+    extValue: subViewTask.doneTime
+  })
 }
 /* ------------------------ */
 
@@ -262,7 +465,81 @@ const handleShowTaskPriority = () => {
 
 // 任务优先级赋值操作
 const handleSaveTaskPriority = (taskPriority) => {
+  const id = subViewTaskId.value
+  const taskIdVal = taskId.value
+  let listId = parseInt(route.params.listId2 || route.params.listId)
+  
   subViewTask.taskPriority = taskPriority
+
+  store.dispatch('setUserTask', {
+    id,
+    taskId: taskIdVal,
+    listId,
+    flag: 'setTaskPriority',
+    value: subViewTask.taskPriority,
+    extValue: subViewTask.doneTime
+  })
+}
+/* ------------------------ */
+
+//! 更改任务信息逻辑区域
+/* ------------------------ */
+// 是否正编辑任务标题
+const isEditTaskInfo = ref(false)
+// 是否正编辑任务描述
+const isEditTaskDesc = ref(false)
+
+// 任务标题输入框对象
+const taskInfoInput = ref(null)
+// 任务描述输入框对象
+const taskDescInput = ref(null)
+
+// 用户点击任务标题进行输入
+const handleEditTaskInfo = async () => {
+  isEditTaskInfo.value = true
+  await nextTick()
+  taskInfoInput.value.focus()
+}
+
+// 用户点击任务描述进行输入
+const handleEditTaskDesc = async () => {
+  isEditTaskDesc.value = true
+  await nextTick()
+  taskDescInput.value.focus()
+}
+
+// 用户结束输入任务标题和任务描述
+const handleCompleteTaskEdit = async (flag) => {
+  if (flag === 'taskInfo') {
+    isEditTaskInfo.value = false
+  } else {
+    isEditTaskDesc.value = false
+  }
+  
+  const id = subViewTaskId.value
+  const taskIdVal = taskId.value
+  let listId = parseInt(route.params.listId2 || route.params.listId)
+
+  //* 任务修改标志字典
+  const flagDics = {
+    taskInfo: {
+      action: 'setTaskInfo',
+      value: subViewTask.taskInfo
+    },
+    taskDesc: {
+      action: 'setTaskDesc',
+      value: subViewTask.taskDesc
+    }
+  }
+
+  store.dispatch('setUserTask', {
+    id,
+    taskId: taskIdVal,
+    listId,
+    flag: flagDics[flag].action,
+    value: flagDics[flag].value,
+    extValue: subViewTask.doneTime
+  })
 }
 /* ------------------------ */
 
@@ -275,11 +552,50 @@ const showTaskList = ref(false)
 const handleShowTaskList = () => {
   showTaskList.value = !showTaskList.value
 }
+
+// 选择了要更改到的清单
+const handleSelectList = (list) => {
+  const id = subViewTaskId.value
+  const taskIdVal = taskId.value
+  let listId = parseInt(route.params.listId2 || route.params.listId)
+  ElMessageBox.confirm(
+    `任务将放入${list.listName}中`,
+    '确认框',
+    {
+      confirmButtonText: '确认',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }
+  ).then(() => {
+    store.dispatch('setUserTask', { 
+      id,
+      taskId: taskIdVal,
+      listId,
+      flag: 'setList',
+      value: list.listId,  // value 值为用户所选清单 id 值
+      extValue: _.cloneDeep(subViewTask)
+    }).then(() => {
+      subViewListInfo.value = list.listFlag + ' ' + list.listName
+
+      if (!route.params.listId2 && list.listId !== listId) {
+        store.commit('deleteUserTask', { id })
+      }
+
+      router.replace({ path: `/list/${route.params.listId}/tasks` })
+    })
+  }).catch(() => {
+    return
+  })
+}
 /* ------------------------ */
 
 //! 删除任务（软删除）逻辑区域
 /* ------------------------ */
 const handleDeleteTask = () => {
+  const id = subViewTaskId.value
+  const taskIdVal = taskId.value
+  let listId = route.params.listId2 || route.params.listId
+  listId = parseInt(listId)
   ElMessageBox.confirm(
     '请确认是否删除该任务',
     '确认框',
@@ -289,21 +605,117 @@ const handleDeleteTask = () => {
       type: 'warning'
     }
   ).then(() => {
-    const id = subViewTaskId.value
-    const taskIdVal = taskId.value
-    const listId = route.params.listId2 || route.params.listId
     store.dispatch('setUserTask', { 
       id,
       taskId: taskIdVal,
       listId,
       flag: 'softDel',
-      value: 1
+      value: 1,
+      extValue: subViewTask.doneTime
+    }).then(() => {
+      router.back()
     })
   }).catch(() => {
     return
   })
 }
 /* ------------------------ */
+
+//! 任务附件（上传、下载、删除、预览）相关逻辑区域
+/* ------------------------ */
+// 上传文件对象
+const taskFile = ref(null)
+
+//* 任务附件上传之前钩子函数
+const beforeFileUpload = (file) => {
+  const isLt2M = file.size / 1024 / 1024 < 2  // 文件大小检测
+
+  if (!isLt2M) {
+    ElMessage.error('文件大小不超过2M！')
+    return false
+  }
+
+  taskFile.value = file
+
+  fileUpload()
+
+  return false  // 停止自动上传
+}
+
+//* 任务附件上传
+const fileUpload = () => {
+  const id = subViewTaskId.value
+  let listId = parseInt(route.params.listId2 || route.params.listId)
+
+  const formData = new FormData()
+  formData.append('File', taskFile.value)
+
+  store.dispatch('uploadUserTaskFile', {
+    id,
+    listId,
+    taskId: taskId.value,
+    formData,
+    beforeFileFlag: (subViewTask.taskFile && subViewTask.taskFile.fileFlag) || 'noFile',
+    extValue: subViewTask.doneTime
+  })
+  .then(() => {
+    ElMessage.success('上传成功')
+  })
+  .catch((error) => {
+    console.log(`${error}`)
+  })
+}
+
+//* 任务附件下载
+const handleDonloadFile = () => {
+  const fileFlag = subViewTask.taskFile.fileFlag
+  window.open(`http://${window.location.hostname}:3000/${fileFlag}`)  //TODO 上线后改成 host（或同一写入进一个配置文件中）
+
+  //? 以下是项目上线后的做法，href 必须是同源链接
+  // let DownloadLink = document.createElement('a')
+  // DownloadLink.style = 'display: none' // 创建一个隐藏的a标签
+  // DownloadLink.download = fileFlag
+  // DownloadLink.href = link
+  // document.body.appendChild(DownloadLink)
+  // DownloadLink.click() // 触发a标签的click事件
+  // document.body.removeChild(DownloadLink)
+}
+
+//* 任务附件预览
+const handlePreviewFile = () => {
+  const fileFlag = subViewTask.taskFile.fileFlag
+  const previewUrl = `http://localhost:3000/${fileFlag}`
+
+  window.open(`http://localhost:8012/onlinePreview?url=${encodeURIComponent(Base64.encode(previewUrl))}`)
+}
+
+//* 任务附件删除
+const handleDeleteFile = () => {
+  const id = subViewTaskId.value
+  let listId = parseInt(route.params.listId2 || route.params.listId)
+
+  store.dispatch('deleteUserTaskFile', {
+    id,
+    listId,
+    taskId: taskId.value,
+    value: subViewTask.taskFile.fileFlag,
+    extValue: subViewTask.doneTime
+  })
+  .then(() => {
+    ElMessage.success('删除成功')
+  })
+  .catch((error) => {
+    console.log(`${error}`)
+  })
+}
+/* ------------------------ */
+
+//! 查看任务动态相关逻辑区域
+/* ------------------------ */
+// 显示任务动态标记
+const developmentVisible = ref(false)
+/* ------------------------ */
+
 
 //! 点击模态背景相关逻辑区域
 /* ------------------------ */
@@ -410,6 +822,20 @@ const handleCloseTaskSettings = () => {
       font-size: .18rem;
       font-weight: bold;
       margin-bottom: .05rem;
+
+      .taskInfoInput {
+        line-height: 0rem;
+        
+        .el-input__inner {
+          font-size: .18rem;
+          font-weight: bold;
+          color: $base-fontColor;
+          background: none;
+          height: inherit;
+          line-height: 0rem;
+          padding: 0rem;
+        }
+      }
     }
 
     &__taskContentWrapper {
@@ -422,6 +848,19 @@ const handleCloseTaskSettings = () => {
 
       &__tips {
         color: rgb(150, 150, 150);
+      }
+
+      .taskDescInput {
+        line-height: 0rem;
+        .el-textarea__inner {
+          line-height: 1;
+          color: $base-fontColor;
+          background: none;
+          border: none;
+          height: inherit;
+          padding: 0rem;
+          resize: unset;
+        }
       }
     }
 

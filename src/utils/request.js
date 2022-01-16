@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2021-09-18 14:26:38
- * @LastEditTime: 2021-12-05 12:05:38
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2022-01-15 17:49:13
+ * @LastEditors: 胡晨明
  * @Description: In User Settings Edit
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\utils\request.js
  */
@@ -50,6 +50,10 @@ service.interceptors.response.use((res) => {
     }, 1000)
     return Promise.reject(TOKEN_INVALID)
   } else {
+    console.log(res.headers['content-disposition'])
+    if (res.headers['content-disposition']) {
+      return
+    }
     ElMessage.error(msg || NETWORK_ERROR)
     return Promise.reject(msg || NETWORK_ERROR)
   }
