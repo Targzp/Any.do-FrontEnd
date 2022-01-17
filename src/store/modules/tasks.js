@@ -1,7 +1,7 @@
 /*
  * @Author: 胡晨明
  * @Date: 2021-12-01 23:09:10
- * @LastEditTime: 2022-01-16 14:34:08
+ * @LastEditTime: 2022-01-17 17:40:54
  * @LastEditors: 胡晨明
  * @Description: 用户任务状态管理
  * @FilePath: \Anydo-app\src\store\modules\tasks.js
@@ -10,6 +10,7 @@ import db from '../db/index'
 import dayjs from 'dayjs'
 import request from '@/api/'
 import _ from 'lodash'
+import setTaskDevelopment from '../utils/setTaskDevelopment'
 
 // initial state
 const state = () => ({
@@ -42,7 +43,7 @@ const mutations = {
    * @param {*} state
    * @param {*} settingValues
    */
-  removeUserTask (state, { id, listId, taskId, flag, value, extValue }) {
+  removeUserTask (state, { id, flag, value, extValue }) {
     if ((flag === 'done' && value === 1) || (flag === 'softDel' && !extValue)) {
       const taskIndex = state.userTasks.findIndex(task => task.id === id)
       state.userTasks.splice(taskIndex, 1)
@@ -76,7 +77,7 @@ const mutations = {
    * @description: 设置用户缓存任务相关值
    * @param {*} state
    */
-  setUserTask (state, { id, flag, value, extValue }) {
+  setUserTask (state, { id, flag, value, extValue, taskOptRecords }) {
     const flagDics = {
       setTaskInfo: 'taskInfo',
       setTaskDesc: 'taskDesc',
@@ -88,6 +89,7 @@ const mutations = {
       state.userTasks.forEach(item => {
         if (item.id === id) {
           item.listId = value
+          itme.task.taskOptRecords = taskOptRecords
         }
       })
       break
@@ -111,6 +113,7 @@ const mutations = {
             item.tasks.forEach(doneTask => {
               if (doneTask.id === id) {
                 doneTask.task[flagDics[flag]] = value
+                doneTask.task.taskOptRecords = taskOptRecords
               }
             })
           }
@@ -119,6 +122,7 @@ const mutations = {
         state.userTasks.forEach(item => {
           if (item.id === id) {
             item.task[flagDics[flag]] = value
+            item.task.taskOptRecords = taskOptRecords
           }
         })
       }
@@ -130,17 +134,19 @@ const mutations = {
           if (item.doneTime === extValue) {
             item.tasks.forEach(doneTask => {
               if (doneTask.id === id) {
-                Object.assign(doneTask, value)
+                Object.assign(doneTask.task, value)
+
+                doneTask.task.taskOptRecords = taskOptRecords
               }
 
               if (value.subFlag === 'quantum') {
-                doneTask.taskDate = ''
-                doneTask.taskTime = ''
+                doneTask.task.taskDate = ''
+                doneTask.task.taskTime = ''
               } else if (value.subFlag === 'date') {
-                doneTask.startTaskDate = ''
-                doneTask.startTaskTime = ''
-                doneTask.endTaskDate = ''
-                doneTask.endTaskTime = ''
+                doneTask.task.startTaskDate = ''
+                doneTask.task.startTaskTime = ''
+                doneTask.task.endTaskDate = ''
+                doneTask.task.endTaskTime = ''
               }
             })
           }
@@ -148,17 +154,19 @@ const mutations = {
       } else {
         state.userTasks.forEach(item => {
           if (item.id === id) {
-            Object.assign(item, value)
+            Object.assign(item.task, value)
+
+            item.task.taskOptRecords = taskOptRecords
           }
 
           if (value.subFlag === 'quantum') {
-            item.taskDate = ''
-            item.taskTime = ''
+            item.task.taskDate = ''
+            item.task.taskTime = ''
           } else if (value.subFlag === 'date') {
-            item.startTaskDate = ''
-            item.startTaskTime = ''
-            item.endTaskDate = ''
-            item.endTaskTime = ''
+            item.task.startTaskDate = ''
+            item.task.startTaskTime = ''
+            item.task.endTaskDate = ''
+            item.task.endTaskTime = ''
           }
         })
       }
@@ -305,6 +313,7 @@ const actions = {
   async setUserTask({ commit }, settingValues) {
     try {
       let res
+      let taskOptRecords
       let { id, listId, taskId, flag, value, extValue } = settingValues
       switch (flag) {
       // 已完成/已完成还原
@@ -314,6 +323,8 @@ const actions = {
         if (!value) {
           doneTime = extValue
           extValue = ''
+        } else {
+          await setTaskDevelopment(id, 'DONE')
         }
         res = await db.tasks.update(id, { 'task.doneFlag': value, 'task.doneTime': extValue })
         if (res) {
@@ -332,32 +343,36 @@ const actions = {
       // 更改任务所属清单
       case 'setList': {
         res = await db.tasks.update(id, { listId: value })
+        taskOptRecords = await setTaskDevelopment(id, 'LIST')
         if (res) {
-          commit('setUserTask', { id, flag, value })
+          commit('setUserTask', { id, flag, value, taskOptRecords })
         }
         break
       }
       // 更改任务标题信息
       case 'setTaskInfo': {
         res = await db.tasks.update(id, { 'task.taskInfo': value })
+        taskOptRecords = await setTaskDevelopment(id, 'TITLE')
         if (res) {
-          commit('setUserTask', { id, flag, value, extValue })
+          commit('setUserTask', { id, flag, value, extValue, taskOptRecords })
         }
         break
       }
       // 更改任务描述信息
       case 'setTaskDesc': {
         res = await db.tasks.update(id, { 'task.taskDesc': value })
+        taskOptRecords = await setTaskDevelopment(id, 'DESC')
         if (res) {
-          commit('setUserTask', { id, flag, value, extValue })
+          commit('setUserTask', { id, flag, value, extValue, taskOptRecords })
         }
         break
       }
       // 更改任务优先级
       case 'setTaskPriority': {
         res = await db.tasks.update(id, { 'task.taskPriority': value })
+        taskOptRecords = await setTaskDevelopment(id, 'PRIO')
         if (res) {
-          commit('setUserTask', { id, flag, value, extValue })
+          commit('setUserTask', { id, flag, value, extValue, taskOptRecords })
         }
         break
       }
@@ -395,8 +410,10 @@ const actions = {
           })
         }
 
+        taskOptRecords = await setTaskDevelopment(id, 'DT')
+
         if (res) {
-          commit('setUserTask', { id, flag, value, extValue })
+          commit('setUserTask', { id, flag, value, extValue, taskOptRecords })
         }
         break
       }
@@ -447,11 +464,13 @@ const actions = {
    */
   async uploadUserTaskFile({ commit }, { id, listId, taskId, formData, beforeFileFlag, extValue }) {
     try {
+      let taskOptRecords
       const res = await request.postUserTaskFile({ formData, beforeFileFlag, listId, taskId })
 
       await db.tasks.update(id, { 'task.taskFile': res })
+      taskOptRecords = await setTaskDevelopment(id, 'AFILE')
 
-      commit('setUserTask', { id, value: res, flag: 'setTaskFile', extValue })
+      commit('setUserTask', { id, value: res, flag: 'setTaskFile', extValue, taskOptRecords })
     } catch (error) {
       throw error
     }
@@ -461,9 +480,11 @@ const actions = {
    */
   async deleteUserTaskFile({ commit }, { id, listId, taskId, value, extValue }) {
     try {
+      let taskOptRecords
       await db.tasks.update(id, { 'task.taskFile': {} })
+      taskOptRecords = await setTaskDevelopment(id, 'DFILE')
 
-      commit('setUserTask', { id, value: {}, flag: 'setTaskFile', extValue })
+      commit('setUserTask', { id, value: {}, flag: 'setTaskFile', extValue, taskOptRecords })
 
       await request.deleteUserTaskFile({ listId, taskId, value })
     } catch (error) {

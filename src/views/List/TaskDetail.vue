@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-10-12 16:12:41
- * @LastEditTime: 2022-01-16 23:41:19
+ * @LastEditTime: 2022-01-17 17:53:19
  * @LastEditors: 胡晨明
  * @Description: 查看任务详细信息组件
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\List\TaskDetail.vue
@@ -136,8 +136,12 @@
                 <span>上传附件</span>
               </el-upload>
             </el-dropdown-item>
-            <el-dropdown-item>任务动态</el-dropdown-item>
-            <el-dropdown-item @click="handleDeleteTask">删除任务</el-dropdown-item>
+            <el-dropdown-item
+              @click="handleCheckTaskDevelopment"
+            >任务动态</el-dropdown-item>
+            <el-dropdown-item
+              @click="handleDeleteTask"
+            >删除任务</el-dropdown-item>
           </el-dropdown-menu>
         </template>
       </el-dropdown>
@@ -164,12 +168,16 @@
       class="modal"
       @click="() => { handleCloseTaskSettings() }"
     ></div>
-    <!-- Modal 区域 2：任务动态 -->
+    <!-- Modal 区域 2：查看任务动态 -->
     <el-dialog
       v-model="developmentVisible"
       title="任务动态"
-      width="300px"
+      width="380px"
+      :append-to-body="true"
     >
+      <TasksDevelopment
+        :taskDevelopments="subViewTask.taskOptRecords"
+      />
     </el-dialog>
   </div>
 </template>
@@ -181,9 +189,10 @@ import _ from 'lodash'
 import dayjs from 'dayjs'
 import TasksPrioritySetting from './TasksPrioritySetting.vue'
 import TasksGeneralSetting from './TasksGeneralSetting.vue'
+import TasksDevelopment from './TasksDevelopment.vue'
 import request from '@/api/index'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Base64 } from 'js-base64';
+import { Base64 } from 'js-base64'
 
 // 状态管理仓库
 const store = useStore()
@@ -276,6 +285,10 @@ const getTaskData = async () => {
 
   if (!task.taskFile) {
     delete subViewTask.taskFile
+  }
+
+  if (!task.taskOptRecords) {
+    delete subViewTask.taskOptRecords
   }
 
   Object.assign(subViewTask, task)
@@ -712,8 +725,13 @@ const handleDeleteFile = () => {
 
 //! 查看任务动态相关逻辑区域
 /* ------------------------ */
-// 显示任务动态标记
+// 显示任务动态 modal 标记
 const developmentVisible = ref(false)
+
+//* 查看任务动态
+const handleCheckTaskDevelopment = () => {
+  developmentVisible.value = true
+}
 /* ------------------------ */
 
 
