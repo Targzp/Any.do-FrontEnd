@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-12-02 14:10:07
- * @LastEditTime: 2021-12-29 15:18:36
+ * @LastEditTime: 2022-01-27 21:22:00
  * @LastEditors: 胡晨明
  * @Description: 任务列表组件
  * @FilePath: \Anydo-app\src\views\List\TasksLists.vue
@@ -63,6 +63,12 @@
                   class="listInfo"
                   @click.self="() => { handleGotoList(element.listId) }"
                 >{{handleTaskList(element.listId)}}</span>
+                <span
+                  v-if="syncListId !== 3"
+                  class="timeInfo"
+                >
+                  {{handleGetTaskTime(element)}}
+                </span>
               </div>
             </div>
           </template>
@@ -104,6 +110,11 @@
                       class="taskInfo"
                       @click="() => { handleCheckTaskInfo(element.id, element.listId, element.taskId) }"
                     >{{element.task && element.task.taskInfo}}</span>
+                    <span
+                      class="timeInfo"
+                    >
+                      {{handleGetTaskTime(element)}}
+                    </span>
                   </div>
                 </div>
               </template>
@@ -225,6 +236,9 @@ const handleCompleteTask = (settingValues) => {
     settingValues.extValue = dayjs().startOf('day').valueOf() + ''  // 设置任务结束日期时间戳
   }
   store.dispatch('setUserTask', settingValues)
+  .then(() => {
+    router.back()
+  })
 }
 
 // 获取任务清单名称和flag
@@ -236,6 +250,15 @@ const handleTaskList = (listId) => {
     }
   })
   return listDesc
+}
+
+// 获取任务时间并格式化返回
+const handleGetTaskTime = (elm) => {
+  if (elm.task.taskDate) {
+    return dayjs(+elm.task.taskTime).format('MM月DD日 HH:mm')
+  } else if (elm.task.startTaskDate) {
+    return `${dayjs(+elm.task.startTaskDate).format('MM月DD日')} ${dayjs(+elm.task.startTaskTime).format('HH:mm')} - ${dayjs(+elm.task.endTaskDate).format('MM月DD日')} ${dayjs(+elm.task.endTaskTime).format('HH:mm')}`
+  }
 }
 
 // 查看今天任务下点击任务清单信息跳转到指定清单
@@ -283,10 +306,10 @@ const handleRevertTask = (settingValues) => {
   store.dispatch('setUserTask', settingValues)
 }
 
-// 获取全部任务列表
+// 获取任务列表
 ;(async () => {
   try {
-    store.dispatch('saveUserTasksDB', props.listId)
+    store.dispatch('getUserTasks', props.listId)
   } catch (error) {
     console.log(`${error}`)
   }
@@ -331,6 +354,12 @@ const handleRevertTask = (settingValues) => {
 
       .listInfo {
         font-size: .13rem;
+        color: $lighter-fontColor;
+        margin-right: .05rem;
+      }
+
+      .timeInfo {
+        font-size: .12rem;
         color: $lighter-fontColor;
         margin-right: .05rem;
       }

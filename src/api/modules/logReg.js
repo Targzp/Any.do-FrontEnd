@@ -28,6 +28,16 @@ export const login = (params) => {
   })
 }
 
+// 退出登录接口调用定义
+export const logout = () => {
+  return request({
+    method: 'post',
+    url: '/users/logout',
+    data: {},
+    mock: false
+  })
+}
+
 // 发送验证码接口调用定义
 export const sendcode = (params) => {
   return request({

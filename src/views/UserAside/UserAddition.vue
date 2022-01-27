@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-10-30 15:38:26
- * @LastEditTime: 2021-12-25 20:42:32
+ * @LastEditTime: 2022-01-27 21:10:23
  * @LastEditors: 胡晨明
  * @Description: 用户附加功能区域组件
  * @FilePath: \Node.js_storee:\毕设项目\Anydo-app\src\views\UserAside\UserAddition.vue
@@ -80,8 +80,11 @@ import { ref, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import { ElMessageBox, ElMessage } from 'element-plus'
+import Cookies from '@/utils/cookies'
 import config from '../../config/index'
 import request from '../../api/index'
+import Socket from '../../utils/websocket'
+import { clearNotifyFlags } from '@/utils/tasksNotify'
 
 // 获取 user 状态管理仓库
 const store = useStore()
@@ -172,8 +175,12 @@ const handleLoginOut = () => {
     confirmButtonText: '确认',
     type: 'warning',
   }).then(async () => {
-    store.commit('saveUserInfo', null)
-    store.commit('clearUserList')
+    store.commit('saveUserInfo', null)  //* 清空用户信息
+    store.commit('clearUserList')       //* 清空用户清单列表
+    await store.dispatch('clearUserTask')     //* 清空用户任务列表
+    Socket.closeWebSocket()   //* 关闭 webSocket 连接
+    clearNotifyFlags()        //* 清除任务定时器
+    Cookies.removeCookies(['anydo.sid.sig', 'anydo.sid'])        //* 清空用户 cookie 值（也需调后端接口去清除后端 session）
     router.push('/login')
   }).catch(() => {
     return

@@ -1,8 +1,8 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-10-20 16:11:59
- * @LastEditTime: 2021-12-03 10:13:15
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2022-01-27 21:39:08
+ * @LastEditors: 胡晨明
  * @Description: 自定义设置主要设置界面组件
  * @FilePath: \Node.js_storee:\毕设项目\Anydo-app\src\views\CustomSetting\CustomMain.vue
 -->
@@ -59,34 +59,15 @@
             <!-- 提醒与通知 -->
             <div class="customMain__gap customMain__notify">
                 <div class="customMain__title" :ref="scrollDoms.notifyDom">提醒与通知</div>
-                <div class="customMain__item-flex customMain__notify__dailyNotifyItem">
-                    <span class="customMain__desc">每日提醒时间</span>
-                    <div class="customMain__notify__dailyNotify">
-                        <div v-if="showDailyNotify">
-                            <el-time-select
-                                class="customMain__notify__timeSelect"
-                                v-model="notify.dailyNotifyTime.time"
-                                :start="timeMode.format.start"
-                                step="01:00"
-                                :end="timeMode.format.end"
-                                placeholder="Select"
-                            >
-                            </el-time-select>
-                            <el-select
-                                v-model="notify.dailyNotifyTime.PA"
-                                :class="['customMain__notify__paSelect', { 'customMain__notify__paSelect--hidden': +customSettings.timeAndDate.timeFormat === 24}]"
-                            >
-                                <el-option value="AM" label="AM"></el-option>
-                                <el-option value="PM" label="PM"></el-option>
-                            </el-select>
-                        </div>
-                        <el-link
-                            type="primary"
-                            class="customMain__notify__showDailyNotify"
-                            :underline="false"
-                            @click="handleShowDailyNotify"
-                        >{{showDailyNotify?'关闭':'开启'}}每日提醒</el-link>
-                    </div>
+                <div class="customMain__item-flex">
+                    <span class="customMain__desc">邮件提醒</span>
+                    <el-select
+                        class="customMain__inputWidth"
+                        v-model="notify.mailNotify"
+                    >
+                        <el-option :value="true" label="通过邮件提醒我"></el-option>
+                        <el-option :value="false" label="不要通过邮件提醒我"></el-option>
+                    </el-select>
                 </div>
                 <div class="customMain__item-flex">
                     <span class="customMain__desc">网页提醒</span>
@@ -135,7 +116,6 @@
                         <el-option value="5" label="提前5分钟"></el-option>
                         <el-option value="30" label="提前30分钟"></el-option>
                         <el-option value="60" label="提前1小时"></el-option>
-                        <el-option value="1440" label="提前1天"></el-option>
                     </el-select>
                 </div>
                 <div class="customMain__item-flex">
@@ -177,7 +157,7 @@
 
 <script setup>
 import { useStore } from 'vuex'
-import { ref, reactive, toRefs, watch } from 'vue'
+import { reactive, toRefs, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import request from '../../api/index'
 
@@ -223,10 +203,7 @@ const customSettings = reactive({
         firstDayOfWeek: "1"
     },
     notify: {
-        dailyNotifyTime: {
-            time: "",
-            PA: "AM"
-        },
+        "mailNotify": false,
         "webNotify": true
     },
     taskDefault: {
@@ -246,10 +223,6 @@ const { functions, timeAndDate, notify, taskDefault } = toRefs(customSettings)
         let res = await request.getCustomSettings()
         if (res) {
             Object.assign(customSettings, res)
-            // 检测是否开启每日提醒
-            if (customSettings.notify.dailyNotifyTime.time) {
-                showDailyNotify.value = true
-            }
         }
     } catch (error) {
         console.log(`${error}`)
@@ -275,77 +248,77 @@ const handleCustomSettingsPost = () => {
 }
 
 // 每日提醒开启和关闭
-const showDailyNotify = ref(false)
+// const showDailyNotify = ref(false)
 
 // 每日提醒的切换及初始提醒时间
-const handleShowDailyNotify = () => {
-    showDailyNotify.value = !showDailyNotify.value
-    if (showDailyNotify.value) {
-        customSettings.notify.dailyNotifyTime.time = '09:00'
-    } else {
-        customSettings.notify.dailyNotifyTime.time = ''
-    }
-}
+// const handleShowDailyNotify = () => {
+//     showDailyNotify.value = !showDailyNotify.value
+//     if (showDailyNotify.value) {
+//         customSettings.notify.dailyNotifyTime.time = '09:00'
+//     } else {
+//         customSettings.notify.dailyNotifyTime.time = ''
+//     }
+// }
 
 // 小时制字典
-const timeFormatDic = {
-    12: {
-        start: '01:00',
-        end: '12:00'
-    },
-    24: {
-        start: '00:00',
-        end: '23:00'
-    }
-}
+// const timeFormatDic = {
+//     12: {
+//         start: '01:00',
+//         end: '12:00'
+//     },
+//     24: {
+//         start: '00:00',
+//         end: '23:00'
+//     }
+// }
 
 // 小时制模式切换，默认为24小时制
-const timeMode = reactive({
-    format: timeFormatDic['24']
-})
+// const timeMode = reactive({
+//     format: timeFormatDic['24']
+// })
 
 // 根据用户的选择的小时制来切换提醒时间的小时制(以及小时制的相互转换)
-watch(
-    () => customSettings.timeAndDate.timeFormat,
-    (timeFormat) => {
-        timeMode.format = timeFormatDic[timeFormat]
+// watch(
+//     () => customSettings.timeAndDate.timeFormat,
+//     (timeFormat) => {
+//         timeMode.format = timeFormatDic[timeFormat]
 
-        let { time, PA } = toRefs(customSettings.notify.dailyNotifyTime)
+//         let { time, PA } = toRefs(customSettings.notify.dailyNotifyTime)
 
-        // 如果没有开启每日提醒，即 time 解构出来为 undefined
-        if (!time) {
-            return
-        }
+//         // 如果没有开启每日提醒，即 time 解构出来为 undefined
+//         if (!time) {
+//             return
+//         }
 
-        let oldHour = +(time.value.split(':')[0])
-        let newHour = 0
+//         let oldHour = +(time.value.split(':')[0])
+//         let newHour = 0
 
-        if (timeFormat === '24') {
-            if (time.value === '12:00') {
-                time.value = '00:00'
-                PA.value = 'AM'
-                return
-            }
+//         if (timeFormat === '24') {
+//             if (time.value === '12:00') {
+//                 time.value = '00:00'
+//                 PA.value = 'AM'
+//                 return
+//             }
 
-            // 十二小时制时间转换为二十四小时制时间，只有为PM的时间需要加12
-            newHour = PA.value==='PM'?oldHour+12:oldHour      
-        } else {
-            if (time.value === '00:00') {
-                time.value = '12:00'
-                PA.value = 'PM'
-                return
-            }
+//             // 十二小时制时间转换为二十四小时制时间，只有为PM的时间需要加12
+//             newHour = PA.value==='PM'?oldHour+12:oldHour      
+//         } else {
+//             if (time.value === '00:00') {
+//                 time.value = '12:00'
+//                 PA.value = 'PM'
+//                 return
+//             }
 
-            // 二十四小时制时间为下午和晚上需把PA转换为PM
-            PA.value = (oldHour>11&&oldHour<=23)?'PM':'AM'
+//             // 二十四小时制时间为下午和晚上需把PA转换为PM
+//             PA.value = (oldHour>11&&oldHour<=23)?'PM':'AM'
 
-            // 二十四小时制时间大于12的需要减12
-            newHour = oldHour>12?oldHour-12:oldHour
-        }
+//             // 二十四小时制时间大于12的需要减12
+//             newHour = oldHour>12?oldHour-12:oldHour
+//         }
 
-        time.value = newHour + ':00'
-    }
-)
+//         time.value = newHour + ':00'
+//     }
+// )
 </script>
 
 <style lang="scss">
@@ -449,19 +422,19 @@ watch(
             margin-right: .25rem;
         }
 
-        &__dailyNotifyItem {
-            align-items: flex-start;
-        }
+        // &__dailyNotifyItem {
+        //     align-items: flex-start;
+        // }
 
-        &__dailyNotify {
-            display: flex;
-            flex-flow: column wrap;
-        }
+        // &__dailyNotify {
+        //     display: flex;
+        //     flex-flow: column wrap;
+        // }
 
-        &__showDailyNotify {
-            display: inline-block;
-            width: 2.05rem;
-        }
+        // &__showDailyNotify {
+        //     display: inline-block;
+        //     width: 2.05rem;
+        // }
 
         &__timeSelect {
             width: 1.2rem;

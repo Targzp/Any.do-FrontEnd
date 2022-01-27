@@ -50,10 +50,6 @@ service.interceptors.response.use((res) => {
     }, 1000)
     return Promise.reject(TOKEN_INVALID)
   } else {
-    console.log(res.headers['content-disposition'])
-    if (res.headers['content-disposition']) {
-      return
-    }
     ElMessage.error(msg || NETWORK_ERROR)
     return Promise.reject(msg || NETWORK_ERROR)
   }

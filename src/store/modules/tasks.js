@@ -1,7 +1,7 @@
 /*
  * @Author: 胡晨明
  * @Date: 2021-12-01 23:09:10
- * @LastEditTime: 2022-01-17 17:40:54
+ * @LastEditTime: 2022-01-25 11:00:47
  * @LastEditors: 胡晨明
  * @Description: 用户任务状态管理
  * @FilePath: \Anydo-app\src\store\modules\tasks.js
@@ -11,6 +11,7 @@ import dayjs from 'dayjs'
 import request from '@/api/'
 import _ from 'lodash'
 import setTaskDevelopment from '../utils/setTaskDevelopment'
+import tasksNotify from '@/utils/tasksNotify'
 
 // initial state
 const state = () => ({
@@ -182,7 +183,7 @@ const actions = {
   /**
    * @description: 异步存储用户所有清单任务集合并且定义指定 listId 任务集合
    */
-  async saveUserTasksDB ({ dispatch }, listId) {
+  async saveUserTasksDB ({ dispatch }) {
     let allTasks
 
     const tasksTotal = await db.tasks.count()
@@ -220,9 +221,9 @@ const actions = {
           console.log(`${error}`)
         }
       }
-    }
 
-    await dispatch('getUserTasks', listId)
+      tasksNotify() //* 获取所有任务后，进行任务通知设定
+    }
   },
   /**
    * @description: 异步存储用户添加任务
@@ -231,8 +232,9 @@ const actions = {
     try {
       const res = await request.postUserAddTask(postParams)
       const dbParams = { listId: postParams.listId, taskId: res.taskId, task: res }
-      await db.tasks.add(dbParams)  // 返回的是一个 id 值
+      const id = await db.tasks.add(dbParams)  // 返回的是一个 id 值
       commit('addUserTask', dbParams)
+      return id
     } catch (error) {
       console.log(`${error}`)
     }
@@ -432,7 +434,7 @@ const actions = {
     }
   },
   /**
-   * @description: 异步删除任务数据
+   * @description: 异步删除（已软删除）任务数据
    */
   async deleteUserTask({ commit }, deleteValues) {
     try {
@@ -446,7 +448,7 @@ const actions = {
     }
   },
   /**
-   * @description: 异步删除全部任务数据
+   * @description: 异步删除（已软删除）全部任务数据
    */
   async batchDeleteUserTask({ commit }, deleteValues) {
     try {
@@ -455,6 +457,16 @@ const actions = {
       commit('batchDeleteUserTask')
 
       await request.postUserBatchDeleteTask(deleteValues)
+    } catch (error) {
+      console.log(`${error}`)
+    }
+  },
+  /**
+   * @description: 清空本地全部任务数据（注意这里是用户退出登录需要进行的清空操作）
+   */
+  async clearUserTask ({ commit }) {
+    try {
+      await db.tasks.clear()
     } catch (error) {
       console.log(`${error}`)
     }

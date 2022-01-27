@@ -6,7 +6,7 @@
  * @Description: 接口汇总
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\api\index.js
  */
-import { register, login, sendcode, verifyCode } from './modules/logReg'
+import { register, login, logout, sendcode, verifyCode } from './modules/logReg'
 import { getProfile, checkUserName, sendimg, postProfile, postUpdatePassword, postUpdateBindMail, deleteAccount } from './modules/userInfo'
 import { postUserAdvice } from './modules/feedback'
 import { getCustomSettings, getUserFunctions, getUserTaskDefault, postCustomSettings } from './modules/userSettings'
@@ -17,6 +17,8 @@ export default {
   register,
   // 登录接口
   login,
+  // 退出登录接口
+  logout,
   // 发送验证码接口
   sendcode,
   // 验证码检测接口

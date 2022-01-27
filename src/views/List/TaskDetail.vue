@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-10-12 16:12:41
- * @LastEditTime: 2022-01-17 17:53:19
+ * @LastEditTime: 2022-01-27 15:56:04
  * @LastEditors: 胡晨明
  * @Description: 查看任务详细信息组件
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\List\TaskDetail.vue
@@ -80,9 +80,10 @@
               ref="taskDescInput"
               class="taskDescInput"
               v-model="subViewTask.taskDesc"
-              @blur="() => { handleCompleteTaskEdit('taskDesc') }"
+              @change="() => { handleCompleteTaskEdit('taskDesc') }"
+              placeholder="任务的一些具体描述"
             />
-            <span 
+            <span
               v-else-if="!subViewTask.taskDesc"
               class="TaskInfo__taskMain__taskContent__tips"
             >任务的一些具体描述</span>
@@ -193,6 +194,7 @@ import TasksDevelopment from './TasksDevelopment.vue'
 import request from '@/api/index'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Base64 } from 'js-base64'
+import { resetTaskNotify } from '@/utils/tasksNotify'
 
 // 状态管理仓库
 const store = useStore()
@@ -236,7 +238,7 @@ const getTaskData = async () => {
     })
   } else if (listId === 2) {
     userTasks.forEach(doneTasks => {
-      if (!doneTasks) {
+      if (!doneTasks.tasks) {
         return
       }
       doneTasks.tasks.forEach(doneTask => {
@@ -462,6 +464,9 @@ const handleSaveTaskSetting = (settingTask) => {
     flag: 'setTaskGeneral',
     value: quantumModeObj || dateModeObj || modeObj,
     extValue: subViewTask.doneTime
+  })
+  .then(() => {
+    resetTaskNotify(id, Object.assign(_.cloneDeep(subViewTask), quantumModeObj || dateModeObj || modeObj))
   })
 }
 /* ------------------------ */
@@ -870,6 +875,7 @@ const handleCloseTaskSettings = () => {
 
       .taskDescInput {
         line-height: 0rem;
+
         .el-textarea__inner {
           line-height: 1;
           color: $base-fontColor;
@@ -878,6 +884,10 @@ const handleCloseTaskSettings = () => {
           height: inherit;
           padding: 0rem;
           resize: unset;
+        }
+
+        .el-textarea__inner::placeholder {
+          color: rgb(150, 150, 150);
         }
       }
     }

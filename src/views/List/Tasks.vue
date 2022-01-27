@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-10-12 16:12:01
- * @LastEditTime: 2021-12-29 17:59:05
+ * @LastEditTime: 2022-01-27 12:21:28
  * @LastEditors: 胡晨明
  * @Description: 清单任务组件
  * @FilePath: e:\毕设项目\Anydo-app\src\views\List\Tasks.vue
@@ -141,6 +141,7 @@ import { useStore } from 'vuex'
 import request from '../../api/index'
 import _ from 'lodash'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { setNewTaskNotify } from '@/utils/tasksNotify'
 import TaskLists from './TasksLists.vue'
 import TasksGeneralSetting from './TasksGeneralSetting.vue'
 import TasksPrioritySetting from './TasksPrioritySetting.vue'
@@ -379,7 +380,10 @@ const handleSubmitTask = async (listId) => {
   }
   const params = { listId, task }
 
-  store.dispatch('saveUserTaskDB', params).then(() => {
+  store.dispatch('saveUserTaskDB', params)
+  .then((id) => {
+    console.log('id: ', id)
+    setNewTaskNotify(id, task)
     ElMessage.success('添加成功')
     handleResetTaskSetting()  // 重置任务设定
   })

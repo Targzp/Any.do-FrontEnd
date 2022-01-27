@@ -1,8 +1,8 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-09-16 16:31:52
- * @LastEditTime: 2021-12-19 20:46:19
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2022-01-23 13:54:14
+ * @LastEditors: 胡晨明
  * @Description: 应用界面框架
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\Home.vue
 -->
@@ -20,7 +20,7 @@
 </template>
 
 <script setup>
-import UserAsideVue from '../UserAside/UserAside.vue';
+import UserAsideVue from '../UserAside/UserAside.vue'
 </script>
 
 <style lang="scss">

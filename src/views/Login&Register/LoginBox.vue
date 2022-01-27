@@ -1,8 +1,8 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-09-17 17:34:59
- * @LastEditTime: 2021-12-17 21:18:23
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2022-01-25 10:42:30
+ * @LastEditors: 胡晨明
  * @Description: 登录模块页面组件
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\Login&Register\LoginBox.vue
 -->
@@ -97,6 +97,7 @@ import { ElMessage } from 'element-plus'
 import { useSendCodeEffect } from '../../utils/verifyMail.js'
 import request from '../../api/index'
 import Vcode from 'vue3-puzzle-vcode'
+import Socket from '../../utils/websocket'
 
 const router = useRouter() 
 const store = useStore()
@@ -172,7 +173,9 @@ const handleLoginSubmit = () => {
         const res = await request.login(params)
         if (res) {
           ElMessage.success('登录成功')
-          store.commit('saveUserInfo', res)
+          store.commit('saveUserInfo', res)  //* 保存登录用户信息
+          Socket.useWebSocket()  //* 登录成功后进行 webSocket 连接
+          store.dispatch('saveUserTasksDB')
           router.push({ name: 'Home' })
         }
       } catch (error) {

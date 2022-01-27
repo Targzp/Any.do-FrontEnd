@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-12-16 22:53:36
- * @LastEditTime: 2022-01-12 17:48:56
+ * @LastEditTime: 2022-01-25 10:10:00
  * @LastEditors: 胡晨明
  * @Description: 任务通用设定模态框组件及逻辑
  * @FilePath: \Anydo-app\src\components\TaskGeneralSetting.vue
@@ -91,7 +91,6 @@
           <el-option value="5" label="提前5分钟"></el-option>
           <el-option value="30" label="提前30分钟"></el-option>
           <el-option value="60" label="提前1小时"></el-option>
-          <el-option value="1440" label="提前1天"></el-option>
       </el-select>
     </div>
     <div class="TaskSetting__button">
@@ -318,7 +317,7 @@ const handleCleanTaskSetting = () => {
 const handleToSaveTaskSetting = () => {
   // 如果只设定了开始日期没有设定开始时间，那么默认设定开始日期为用户设定时间
   if (subNewTask.startTaskDate && !subNewTask.startTaskTime) {
-    subNewTask.startTaskTime = dayjs().valueOf()
+    subNewTask.startTaskTime = new Date(dayjs().valueOf())
   }
 
   // 如果只设定了结束日期没有设定结束时间，那么默认设定为结束日期当天零点
@@ -326,9 +325,33 @@ const handleToSaveTaskSetting = () => {
     subNewTask.endTaskTime = subNewTask.endTaskDate
   }
 
+  // 如果设定了开始日期和开始时间，则将开始时间调整至对应开始日期时间范围内（统一调整，不管是否已经对应）
+  if (subNewTask.startTaskDate && subNewTask.startTaskTime) {
+    const hour = dayjs(subNewTask.startTaskTime).get('hour')
+    const minute = dayjs(subNewTask.startTaskTime).get('minute')
+
+    subNewTask.startTaskTime = new Date((dayjs(subNewTask.startTaskDate).set('hour', hour).set('minute', minute)).valueOf())
+  }
+
+  // 如果设定了结束日期和结束时间，则将结束时间调整至对应结束日期时间范围内（统一调整，不管是否已经对应）
+  if (subNewTask.endTaskDate && subNewTask.endTaskTime) {
+    const hour = dayjs(subNewTask.endTaskTime).get('hour')
+    const minute = dayjs(subNewTask.endTaskTime).get('minute')
+
+    subNewTask.endTaskTime = new Date((dayjs(subNewTask.endTaskDate).set('hour', hour).set('minute', minute)).valueOf())
+  }
+
   // 如果只设定了任务时间但是没有设置任务日期，则日期默认为今天
   if (subNewTask.taskTime && !subNewTask.taskDate) {
     subNewTask.taskDate = dayjs().startOf('day').valueOf()
+  }
+
+  // 如果设定了任务日期和任务时间，则将任务时间调整至对应任务日期时间范围内（统一调整，不管是否已经对应）
+  if (subNewTask.taskDate && subNewTask.taskTime) {
+    const hour = dayjs(subNewTask.taskTime).get('hour')
+    const minute = dayjs(subNewTask.taskTime).get('minute')
+
+    subNewTask.taskTime = new Date((dayjs(subNewTask.taskDate).set('hour', hour).set('minute', minute)).valueOf())
   }
 
   emit('saveTaskSetting', subNewTask)
