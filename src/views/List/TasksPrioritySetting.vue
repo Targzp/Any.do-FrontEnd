@@ -2,7 +2,7 @@
  * @Author: 胡晨明
  * @Date: 2021-12-20 14:08:40
  * @LastEditors: 胡晨明
- * @LastEditTime: 2021-12-28 19:31:11
+ * @LastEditTime: 2022-02-08 22:14:05
  * @Description: 任务优先级设定模态框组件
 -->
 <template>
@@ -72,7 +72,7 @@ const handleSelectPriority = (index) => {
   position: absolute;
   top: .36rem;
   right: v-bind(offset);
-  z-index: 1;
+  z-index: 10;
   background-color: $base-bgColor;
   border-radius: .05rem;
   box-shadow: 0 0 .15rem .02rem rgba(196, 196, 196, 0.39);

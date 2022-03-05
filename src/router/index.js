@@ -1,7 +1,7 @@
 /*
  * @Author: 胡晨明
  * @Date: 2021-08-15 21:12:02
- * @LastEditTime: 2021-12-23 16:04:12
+ * @LastEditTime: 2022-02-09 09:30:52
  * @LastEditors: 胡晨明
  * @Description: 前端路由配置
  * @FilePath: \bloge:\Vue_store\manager-fe\src\router\index.js
@@ -51,6 +51,38 @@ const routes = [
             ]
           }
         ]
+      },
+      {
+        name: 'Calendar',
+        path: 'calendar',
+        meta: {
+          title: '日历'
+        },
+        component: () => import('../views/Calendar/Calendar.vue')
+      },
+      {
+        name: 'Focus',
+        path: 'focus',
+        meta: {
+          title: '专注'
+        },
+        component: () => import('../views/Focus/Focus.vue')
+      },
+      {
+        name: 'Habit',
+        path: 'habit',
+        meta: {
+          title: '习惯打卡'
+        },
+        component: () => import('../views/Habit/Habit.vue')
+      },
+      {
+        name: 'Chat',
+        path: 'chat',
+        meta: {
+          title: '群聊'
+        },
+        component: () => import('../views/Chat/Chat.vue')
       }
     ]
   },

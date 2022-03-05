@@ -1,8 +1,8 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-12-04 23:08:34
- * @LastEditTime: 2021-12-07 17:08:13
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2022-02-08 10:03:40
+ * @LastEditors: 胡晨明
  * @Description: 用户快速查看清单任务区域组件（所有/今天）
  * @FilePath: \Anydo-app\src\views\UserAside\UserFastList.vue
 -->
@@ -57,6 +57,15 @@ const handleListClick = (id) => {
   span[class*="iconfont"] + span {
     color: $base-fontColor;
     vertical-align: middle;
+  }
+}
+
+@media screen and (max-width: 1100px) {
+  /* 设置主界面响应式 */
+  .FastList {
+    .iconfont {
+      color: rgb(48, 48, 48) !important;
+    }
   }
 }
 </style>

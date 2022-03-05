@@ -51,7 +51,6 @@
                         v-model="timeAndDate.firstDayOfWeek"
                     >
                         <el-option value="2" label="周一"></el-option>
-                        <el-option value="7" label="周六"></el-option>
                         <el-option value="1" label="周日"></el-option>
                     </el-select>
                 </div>
@@ -93,7 +92,6 @@
                         <el-option value="td" label="今天"></el-option>
                         <el-option value="tm" label="明天"></el-option>
                         <el-option value="at" label="后天"></el-option>
-                        <el-option value="nw" label="下周"></el-option>
                     </el-select>
                 </div>
                 <div class="customMain__item-flex">
@@ -172,7 +170,7 @@ const userLists = store.state.lists.userLists
 const functionModels = [
     { functionName: '专注', functionIcon: '&#xe638;', functionFlag: 'focus' },
     { functionName: '打卡', functionIcon: '&#xe62b;', functionFlag: 'habit' },
-    { functionName: '日历', functionIcon: '&#xe61c;', functionFlag: 'calender' },
+    { functionName: '日历', functionIcon: '&#xe61c;', functionFlag: 'calender' }
 ]
 
 // 需滚动的标题元素
@@ -246,79 +244,6 @@ const handleCustomSettingsPost = () => {
         console.log(`${err}`)
     })
 }
-
-// 每日提醒开启和关闭
-// const showDailyNotify = ref(false)
-
-// 每日提醒的切换及初始提醒时间
-// const handleShowDailyNotify = () => {
-//     showDailyNotify.value = !showDailyNotify.value
-//     if (showDailyNotify.value) {
-//         customSettings.notify.dailyNotifyTime.time = '09:00'
-//     } else {
-//         customSettings.notify.dailyNotifyTime.time = ''
-//     }
-// }
-
-// 小时制字典
-// const timeFormatDic = {
-//     12: {
-//         start: '01:00',
-//         end: '12:00'
-//     },
-//     24: {
-//         start: '00:00',
-//         end: '23:00'
-//     }
-// }
-
-// 小时制模式切换，默认为24小时制
-// const timeMode = reactive({
-//     format: timeFormatDic['24']
-// })
-
-// 根据用户的选择的小时制来切换提醒时间的小时制(以及小时制的相互转换)
-// watch(
-//     () => customSettings.timeAndDate.timeFormat,
-//     (timeFormat) => {
-//         timeMode.format = timeFormatDic[timeFormat]
-
-//         let { time, PA } = toRefs(customSettings.notify.dailyNotifyTime)
-
-//         // 如果没有开启每日提醒，即 time 解构出来为 undefined
-//         if (!time) {
-//             return
-//         }
-
-//         let oldHour = +(time.value.split(':')[0])
-//         let newHour = 0
-
-//         if (timeFormat === '24') {
-//             if (time.value === '12:00') {
-//                 time.value = '00:00'
-//                 PA.value = 'AM'
-//                 return
-//             }
-
-//             // 十二小时制时间转换为二十四小时制时间，只有为PM的时间需要加12
-//             newHour = PA.value==='PM'?oldHour+12:oldHour      
-//         } else {
-//             if (time.value === '00:00') {
-//                 time.value = '12:00'
-//                 PA.value = 'PM'
-//                 return
-//             }
-
-//             // 二十四小时制时间为下午和晚上需把PA转换为PM
-//             PA.value = (oldHour>11&&oldHour<=23)?'PM':'AM'
-
-//             // 二十四小时制时间大于12的需要减12
-//             newHour = oldHour>12?oldHour-12:oldHour
-//         }
-
-//         time.value = newHour + ':00'
-//     }
-// )
 </script>
 
 <style lang="scss">
@@ -422,20 +347,6 @@ const handleCustomSettingsPost = () => {
             margin-right: .25rem;
         }
 
-        // &__dailyNotifyItem {
-        //     align-items: flex-start;
-        // }
-
-        // &__dailyNotify {
-        //     display: flex;
-        //     flex-flow: column wrap;
-        // }
-
-        // &__showDailyNotify {
-        //     display: inline-block;
-        //     width: 2.05rem;
-        // }
-
         &__timeSelect {
             width: 1.2rem;
             margin-right: .05rem;
@@ -468,9 +379,9 @@ const handleCustomSettingsPost = () => {
 }
 
 @media screen and (max-width: 800px) {
-    /* 设置底部及主界面响应式 */
-    .customBottom, .customMain {
-        width: 88%;
-    }
+  /* 设置底部及主界面响应式 */
+  .customBottom, .customMain {
+      width: 88%;
+  }
 }
 </style>

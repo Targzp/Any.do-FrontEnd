@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-10-26 17:00:23
- * @LastEditTime: 2021-12-27 13:51:54
+ * @LastEditTime: 2022-02-08 23:13:46
  * @LastEditors: 胡晨明
  * @Description: 用户清单界面组件
  * @FilePath: \Node.js_storee:\毕设项目\Anydo-app\src\views\UserAside\UserLists.vue
@@ -189,14 +189,19 @@ const showList = ref(true)
 
 // 获取清单列表
 ;(async () => {
-  // 只有本地没有用户清单时再去后端请求
-  if (userLists.length === 0) {
-    try {
+  try {
+    // 只有本地没有用户清单时再去后端请求
+    if (userLists.length === 0) {
       let res = await request.getUserLists()
       store.commit('saveUserLists', res.allLists)
-    } catch (error) {
-      console.log(`${error}`)
     }
+
+    const listsRes = await request.getShareLists()
+    if (listsRes && listsRes.length > 0) {
+      store.commit('saveUserShareLists', listsRes)
+    }
+  } catch (error) {
+    console.log(`${error}`)
   }
 })()
 
@@ -444,5 +449,14 @@ const handleDeleteList = async (list, index) => {
         text-align: center;
       }
     }
+}
+
+@media screen and (max-width: 1100px) {
+  /* 设置主界面响应式 */
+  .UserLists {
+    .iconfont {
+      color: rgb(48, 48, 48) !important;
+    }
+  }
 }
 </style>

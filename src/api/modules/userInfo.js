@@ -80,3 +80,33 @@ export const deleteAccount = (params) => {
     mock: false
   })
 }
+
+// 用户搜索接口
+export const searchUser = (params) => {
+  return request({
+    method: 'post',
+    url: '/users/search',
+    data: params,
+    mock: false
+  })
+}
+
+// 用户计算使用天数和上次登录时间接口
+export const countUserUseDays = () => {
+  return request({
+    method: 'post',
+    url: '/users/countusedays',
+    data: {},
+    mock: false
+  })
+}
+
+// 获取用户使用天数接口
+export const getUserUseDays = () => {
+  return request({
+    method: 'get',
+    url: '/users/getusedays',
+    data: {},
+    mock: false
+  })
+}

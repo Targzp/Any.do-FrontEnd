@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-09-17 21:00:19
- * @LastEditTime: 2022-01-23 14:41:58
+ * @LastEditTime: 2022-02-26 21:30:16
  * @LastEditors: 胡晨明
  * @Description: In User Settings Edit
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\main.js
@@ -16,6 +16,9 @@ import zhCn from 'element-plus/es/locale/lang/zh-cn'
 import './assets/style/index.scss'
 import VCalendar from 'v-calendar'
 import Socket from './utils/websocket'
+import dayjs from 'dayjs'
+import 'dayjs/locale/zh-cn'
+dayjs.locale('zh-cn')
 
 const app = createApp(App)
 

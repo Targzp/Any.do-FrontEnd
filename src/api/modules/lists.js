@@ -18,6 +18,16 @@ export const getUserLists = () => {
   })
 }
 
+// 用户查询清单列表数据接口调用定义
+export const searchUserLists = (params) => {
+  return request({
+    method: 'post',
+    url: '/lists/searchlist',
+    data: params,
+    mock: false
+  })
+}
+
 // 提交用户添加清单数据接口调用定义
 export const postUserAddList = (params) => {
   return request({

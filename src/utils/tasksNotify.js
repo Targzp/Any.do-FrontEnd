@@ -2,21 +2,22 @@
  * @Author: 胡晨明
  * @Date: 2022-01-24 10:09:15
  * @LastEditors: 胡晨明
- * @LastEditTime: 2022-01-27 19:30:04
+ * @LastEditTime: 2022-03-05 23:22:38
  * @Description: 任务定时通知配置文件
  */
 import storage from './storage'
 import { ElNotification } from 'element-plus'
 import db from '@/store/db'
+import request from '@/api/index'
 import dayjs from 'dayjs'
 import isBetween from 'dayjs/plugin/isBetween'
 import ObjectSupport from 'dayjs/plugin/objectSupport'
 dayjs.extend(isBetween)
 dayjs.extend(ObjectSupport)
 
-let firstNotifyFlag = null
-let everyHourNotifyFlag = null
-let hourTasksFlags = []
+let firstNotifyFlag = null  // 第一个计算到下一个小时的定时器标识
+let everyHourNotifyFlag = null  // 循环每次到下一个小时的定时器标识
+let hourTasksFlags = []     // 小时内的所有定时器标识集合
 
 let todayTasks = [] // 今日任务集合
 let todayDateStart = 0  // 今日起始时间戳
@@ -58,11 +59,8 @@ async function tasksNotify () {
   // 统一设置任务提醒
   async function setTasksNotify (flag) {
     const nowTime = dayjs().valueOf()
-    console.log('nowTime', nowTime)
     const hourStart = dayjs().startOf('hour').valueOf()
     const hourEnd = dayjs().endOf('hour').valueOf()
-    console.log('hourStart', hourStart)
-    console.log('hourEnd', hourEnd)
 
     // 若过完一天，则重新计算起始和结束时间戳
     if (dayjs().startOf('day').valueOf() > todayDateEnd) {
@@ -80,12 +78,10 @@ async function tasksNotify () {
     })
 
     if (flag === 'first') {
-      console.log('first')
       const nextHour = dayjs().hour() + 1
       const toNextHour = dayjs({ hour: nextHour, minute: 0, second: 0, millisecond: 0 }).startOf('hour').valueOf()
-      console.log(toNextHour - nowTime.valueOf())
+      console.log(toNextHour - nowTime.valueOf()) //? 查看距离下一小时的间隔时间
       firstNotifyFlag = setTimeout(() => {
-        console.log('second')
         hourTasksFlags = []
         setTasksNotify('second')
         everyHourNotifyFlag = setInterval(() => {
@@ -99,8 +95,6 @@ async function tasksNotify () {
 
 //* 为新添加任务增加定时器
 export function setNewTaskNotify (id, task) {
-  console.log('task', task) //? 查看添加任务
-
   const startTaskDate = task.startTaskDate && +task.startTaskDate
   const taskTime = (task.taskTime && +task.taskTime) || (task.taskDate && +task.taskDate)
   const startTime = startTaskDate || taskTime
@@ -136,7 +130,7 @@ export function resetTaskNotify (id, task) {
       hourFlagIndex = index
     }
   })
-  console.log('hourFlagIndex: ', hourFlagIndex)
+
   if (hourFlagIndex) {
     hourTasksFlags.splice(hourFlagIndex, 1)
   }
@@ -168,7 +162,7 @@ export function clearNotifyFlags () {
   if (hourTasksFlags.length > 0) {
     hourTasksFlags.forEach(item => {
       if (item) {
-        clearTimeout(item)
+        clearTimeout(item.notifyFlag)
       }
     })
   }
@@ -180,6 +174,7 @@ function setNotify (id, task, nowTime, hourStart, hourEnd) {
   const taskTime = (task.taskTime && +task.taskTime) || (task.taskDate && +task.taskDate)
   let startTime = startTaskDate || taskTime
   const taskNotify = task.notify
+  const userNotify = storage.getItem('userNotify') || {}
 
   let countdown = 0
   let notifyFlag
@@ -188,26 +183,30 @@ function setNotify (id, task, nowTime, hourStart, hourEnd) {
     startTime = (dayjs(startTime).minute(dayjs(startTime).minute() - (+taskNotify))).valueOf()
   }
 
-  console.log(startTime)
-  console.log(dayjs(startTime).isBetween(dayjs(hourStart), dayjs(hourEnd), null, '[]'))
-
   if (dayjs(startTime).isBetween(dayjs(hourStart), dayjs(hourEnd), null, '[]')) {
     if (dayjs(startTime).minute() >= dayjs(nowTime).minute()) {
       countdown = startTime - nowTime
 
-      notifyFlag = setTimeout(() => {
+      notifyFlag = setTimeout(async () => {
         //* 任务通知逻辑
-        ElNotification({
-          title: 'Any.do网页通知',
-          message: `${task.taskInfo} 已到任务设定时间，请及时处理`,
-          position: 'bottom-right',
-          type: 'warning',
-          duration: 0
-        })
+        if (userNotify.webNotify) {
+          // 网页通知
+          ElNotification({
+            title: 'Any.do网页通知',
+            message: `${task.taskInfo} 已到任务设定时间, 请及时处理`,
+            position: 'bottom-right',
+            type: 'warning',
+            duration: 0
+          })
+        } else if (userNotify.mailNotify) {
+          // 邮箱通知
+          const userMail = storage.getItem('userInfo').userMail
+          const userName = storage.getItem('userInfo').userName
+          await request.userTaskMailNotify({ userName, userMail, taskInfo: task.taskInfo })
+        }
       }, countdown)
 
       hourTasksFlags.push({ id, notifyFlag })
-      console.log('hourTasksFlags: ', hourTasksFlags)
     }
   }
 }

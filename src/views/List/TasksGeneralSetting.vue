@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-12-16 22:53:36
- * @LastEditTime: 2022-01-25 10:10:00
+ * @LastEditTime: 2022-03-05 17:14:46
  * @LastEditors: 胡晨明
  * @Description: 任务通用设定模态框组件及逻辑
  * @FilePath: \Anydo-app\src\components\TaskGeneralSetting.vue
@@ -31,7 +31,7 @@
         class="TaskSetting__taskCalendar"
         :attributes="calendarAttributes"
         :model-config="modelConfig"
-        :first-day-of-week="+(_.get(timeAndDateData, 'firstDayOfWeek', 1))"
+        :first-day-of-week="+(_.get(timeAndDateData, 'firstDayOfWeek', 2))"
       />
       <div class="TaskSetting__taskTime">
         <el-time-picker
@@ -43,7 +43,7 @@
         </el-time-picker>
       </div>
     </div>
-    <div v-else>
+    <div v-if="showTaskQuantum">
       <div class="TaskSetting__taskQuantum">
         <span class="TaskSetting__taskQuantum__title">开始</span>
         <el-date-picker
@@ -125,6 +125,15 @@ const props = defineProps({
   timeAndDateData: {
     type: Object
   },
+  defaultDate: {
+    type: Number
+  },
+  defaultStartDate: {
+    type: String
+  },
+  defaultEndDate: {
+    type: String
+  },
   isReset: {
     type: Boolean
   },
@@ -186,10 +195,11 @@ const handleShowTaskDate = () => {
   showTaskQuantum.value = false
   if (!props.isDetail) {
     Object.assign(subNewTask, {
+      taskDate: props.defaultDate || '',
       startTaskDate: '',
       startTaskTime: '',
       endTaskDate: '',
-      endTaskTime: '',
+      endTaskTime: ''
     })
   }
 }
@@ -197,7 +207,7 @@ const handleShowTaskDate = () => {
 // 切换为任务时间段设定模式
 const handleShowTaskQuantum = () => {
   showTaskQuantum.value = true
-  if (!props.isDetail && !subNewTask.startTaskDate) {
+  if (!props.isDetail) {
     let startTime = dayjs(new Date()) // 获取当前时间
     let nowHour = startTime.hour()
     let nowMinute = startTime.minute()
@@ -217,8 +227,8 @@ const handleShowTaskQuantum = () => {
     Object.assign(subNewTask, {
       taskDate: '',
       taskTime: '',
-      startTaskDate: dayjs(new Date()).startOf('day').valueOf() + '',  // 默认设定为当前日期
-      endTaskDate: dayjs(new Date()).endOf('day').valueOf() + '',
+      startTaskDate: props.defaultStartDate || dayjs(new Date()).startOf('day').valueOf() + '',  // 默认设定为当前日期
+      endTaskDate: props.defaultEndDate || dayjs(new Date()).endOf('day').valueOf() + '',
       startTaskTime: startTime.toDate(), // 默认设定为当前时间
       endTaskTime: endTime.toDate()
     })
@@ -232,7 +242,7 @@ watch(() => props.taskDefaultData, () => {
   } else {
     handleShowTaskDate()
   }
-})
+}, { immediate: true })
 /* -------------------------- */
 
 //! 时间段模式下选择开始日期结束日期、开始时间结束时间逻辑区域
@@ -385,7 +395,7 @@ watch(() => props.newTask, (newTask) => {
   position: absolute;
   top: .36rem;
   right: v-bind(offset);
-  z-index: 1;
+  z-index: 10;
   background-color: $base-bgColor;
   border-radius: .05rem;
   box-shadow: 0 0 .15rem .02rem rgba(196, 196, 196, 0.39);

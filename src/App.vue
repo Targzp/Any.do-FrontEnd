@@ -1,7 +1,7 @@
 <!--
  * @Author: your name
  * @Date: 2021-09-15 23:08:44
- * @LastEditTime: 2022-01-24 18:08:48
+ * @LastEditTime: 2022-03-02 14:13:58
  * @LastEditors: 胡晨明
  * @Description: In User Settings Edit
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\App.vue
@@ -16,9 +16,16 @@
 
 <script setup>
 import tasksNotify from '@/utils/tasksNotify'
+import request from '@/api/index'
+import storage from '@/utils/storage'
 
-onMounted(() => {
-  tasksNotify()
+onMounted(async () => {
+  tasksNotify() // 任务定时提醒设定
+
+  const res = storage.getItem('userInfo')
+  if (res) {
+    await request.countUserUseDays()
+  }
 })
 </script>
 

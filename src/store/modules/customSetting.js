@@ -12,7 +12,7 @@ const state = () => ({
 })
 
 const mutations = {
-   /**
+  /**
    * @description: 更改当前的自定义标题元素 
    * @param {*} state
    * @param {*} tabDom

@@ -1,8 +1,8 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-12-12 15:40:48
- * @LastEditTime: 2021-12-15 23:00:58
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2022-02-08 10:04:44
+ * @LastEditors: 胡晨明
  * @Description: 用户任务回收区域（已完成任务和删除任务）
  * @FilePath: \Anydo-app\src\views\UserAside\UserListRecovery.vue
 -->
@@ -66,6 +66,15 @@ const handleListClick = (id) => {
   span[class*="iconfont"] + span {
     color: $base-fontColor;
     vertical-align: middle;
+  }
+}
+
+@media screen and (max-width: 1100px) {
+  /* 设置主界面响应式 */
+  .taskRecovery {
+    .iconfont {
+      color: rgb(48, 48, 48) !important;
+    }
   }
 }
 </style>

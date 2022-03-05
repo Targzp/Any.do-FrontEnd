@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-10-12 16:12:41
- * @LastEditTime: 2022-01-27 15:56:04
+ * @LastEditTime: 2022-02-28 17:40:11
  * @LastEditors: 胡晨明
  * @Description: 查看任务详细信息组件
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\List\TaskDetail.vue
@@ -30,6 +30,44 @@
           class="iconfont priorityIcon"
           @click="handleShowTaskPriority"
         >&#xe6e6;</div>
+        <div
+          class="iconfont memberIcon"
+          @click="handleShowTaskAssign"
+          v-if="parseInt(route.params.listId2 || route.params.listId) < 300000"
+        >
+        &#xe615;</div>
+      </div>
+      <!-- 任务指派设置模态框 -->
+      <div
+        class="TaskInfo__taskHeader__taskAssign"
+        v-show="showTaskAssignSetting"
+      >
+        <div class="title">
+          指派给
+        </div>
+        <div class="membersList">
+          <div
+            class="notAssign"
+            @click="handleRemoveAssign"
+          >
+            <span class="iconfont icon">&#xe604;</span>
+            <span>不指派</span>
+          </div>
+          <el-scrollbar max-height="70px">
+            <div
+              v-for="member in members"
+              :key="member._id"
+              class="member"
+              @click="() => { handleSelectMember(member._id) }"
+            >
+              <span>{{member.userName}}</span>
+              <span
+                v-if="isSelectedId === member._id"
+                class="iconfont selected"
+              >&#xebe6;</span>
+            </div>
+          </el-scrollbar>
+        </div>
       </div>
       <!-- 任务通用设置模态框 -->
       <div v-show="showTaskSetting">
@@ -37,7 +75,7 @@
           :newTask="subViewTask"
           :timeAndDateData="timeAndDateData"
           @saveTaskSetting="handleSaveTaskSetting"
-          :offset="0.6"
+          :offset="0.8"
           :isReset="reset"
           :isDetail="true"
         />
@@ -142,6 +180,7 @@
             >任务动态</el-dropdown-item>
             <el-dropdown-item
               @click="handleDeleteTask"
+              v-if="parseInt(route.params.listId2 || route.params.listId) < 300000"
             >删除任务</el-dropdown-item>
           </el-dropdown-menu>
         </template>
@@ -165,7 +204,7 @@
     </div>
     <!-- Modal 区域 1：随设定任务日期和优先级打开 -->
     <div
-      v-show="showTaskSetting || showTaskPriority || showTaskList"
+      v-show="showTaskSetting || showTaskPriority || showTaskList || showTaskAssignSetting"
       class="modal"
       @click="() => { handleCloseTaskSettings() }"
     ></div>
@@ -188,6 +227,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import _ from 'lodash'
 import dayjs from 'dayjs'
+import storage from '@/utils/storage'
 import TasksPrioritySetting from './TasksPrioritySetting.vue'
 import TasksGeneralSetting from './TasksGeneralSetting.vue'
 import TasksDevelopment from './TasksDevelopment.vue'
@@ -373,8 +413,10 @@ const handleCompleteTask = () => {
   } else {
     settingValues.extValue = subViewTask.doneTime
   }
-  store.dispatch('setUserTask', settingValues).then(() => {
+  store.dispatch('setUserTask', settingValues).then(async () => {
     router.back()
+    const userName = storage.getItem('userInfo').userName
+    await request.sendTaskNotice({ flag: 'done',  userName, listId, taskInfo: subViewTask.taskInfo, taskId: taskIdVal})
   })
 }
 
@@ -465,8 +507,10 @@ const handleSaveTaskSetting = (settingTask) => {
     value: quantumModeObj || dateModeObj || modeObj,
     extValue: subViewTask.doneTime
   })
-  .then(() => {
+  .then(async () => {
     resetTaskNotify(id, Object.assign(_.cloneDeep(subViewTask), quantumModeObj || dateModeObj || modeObj))
+    const userName = storage.getItem('userInfo').userName
+    await request.sendTaskNotice({ flag: 'edit',  userName, listId, taskInfo: subViewTask.taskInfo, taskId: taskId.value})
   })
 }
 /* ------------------------ */
@@ -496,6 +540,10 @@ const handleSaveTaskPriority = (taskPriority) => {
     flag: 'setTaskPriority',
     value: subViewTask.taskPriority,
     extValue: subViewTask.doneTime
+  })
+  .then(async () => {
+    const userName = storage.getItem('userInfo').userName
+    await request.sendTaskNotice({ flag: 'edit',  userName, listId, taskInfo: subViewTask.taskInfo, taskId: taskId.value})
   })
 }
 /* ------------------------ */
@@ -558,6 +606,10 @@ const handleCompleteTaskEdit = async (flag) => {
     value: flagDics[flag].value,
     extValue: subViewTask.doneTime
   })
+  .then(async () => {
+    const userName = storage.getItem('userInfo').userName
+    await request.sendTaskNotice({ flag: 'edit',  userName, listId, taskInfo: subViewTask.taskInfo, taskId: taskId.value})
+  })
 }
 /* ------------------------ */
 
@@ -568,6 +620,10 @@ const showTaskList = ref(false)
 
 // 更改任务清单展开
 const handleShowTaskList = () => {
+  let listId = parseInt(route.params.listId2 || route.params.listId)
+  if (listId > 300000) {
+    return
+  }
   showTaskList.value = !showTaskList.value
 }
 
@@ -585,13 +641,20 @@ const handleSelectList = (list) => {
       type: 'warning'
     }
   ).then(() => {
+    const extValue = _.cloneDeep(subViewTask)
+    for (let key in extValue) {
+      if (extValue[key] instanceof Date) {
+        extValue[key] = extValue[key].valueOf() + ''
+      }
+    }
+
     store.dispatch('setUserTask', { 
       id,
       taskId: taskIdVal,
       listId,
       flag: 'setList',
       value: list.listId,  // value 值为用户所选清单 id 值
-      extValue: _.cloneDeep(subViewTask)
+      extValue
     }).then(() => {
       subViewListInfo.value = list.listFlag + ' ' + list.listName
 
@@ -630,8 +693,10 @@ const handleDeleteTask = () => {
       flag: 'softDel',
       value: 1,
       extValue: subViewTask.doneTime
-    }).then(() => {
+    }).then(async () => {
       router.back()
+      const userName = storage.getItem('userInfo').userName
+      await request.sendTaskNotice({ flag: 'delete',  userName, listId, taskInfo: subViewTask.taskInfo, taskId: taskId.value})
     })
   }).catch(() => {
     return
@@ -676,8 +741,10 @@ const fileUpload = () => {
     beforeFileFlag: (subViewTask.taskFile && subViewTask.taskFile.fileFlag) || 'noFile',
     extValue: subViewTask.doneTime
   })
-  .then(() => {
+  .then(async () => {
     ElMessage.success('上传成功')
+    const userName = storage.getItem('userInfo').userName
+    await request.sendTaskNotice({ flag: 'file',  userName, listId, taskInfo: subViewTask.taskInfo, taskId: taskId.value})
   })
   .catch((error) => {
     console.log(`${error}`)
@@ -719,8 +786,10 @@ const handleDeleteFile = () => {
     value: subViewTask.taskFile.fileFlag,
     extValue: subViewTask.doneTime
   })
-  .then(() => {
+  .then(async () => {
     ElMessage.success('删除成功')
+    const userName = storage.getItem('userInfo').userName
+    await request.sendTaskNotice({ flag: 'delfile',  userName, listId, taskInfo: subViewTask.taskInfo, taskId: taskId.value})
   })
   .catch((error) => {
     console.log(`${error}`)
@@ -734,15 +803,99 @@ const handleDeleteFile = () => {
 const developmentVisible = ref(false)
 
 //* 查看任务动态
-const handleCheckTaskDevelopment = () => {
+const handleCheckTaskDevelopment = async () => {
+  let listId = parseInt(route.params.listId2 || route.params.listId)
+  let res = null
+  if (listId > 300000) {
+    res = await request.getShareTaskDevelopment({ listId, taskId: taskId.value })
+  } else {
+    res = await request.getTaskDevelopments({ listId, taskId: taskId.value })
+  }
+
+  if (res && res.length > 0) {
+    subViewTask.taskOptRecords = res
+  }
+  
   developmentVisible.value = true
 }
 /* ------------------------ */
 
+//! 任务指派逻辑区域
+/* ------------------------ */
+// 任务指派设置模态框显示标志
+const showTaskAssignSetting = ref(false)
+
+// 是否指派人员id
+const isSelectedId = ref('')
+
+// 清单共享成员集合
+const members = ref([])
+
+watch(() => taskId.value, async () => {
+  if (!taskId.value) {
+    return
+  }
+  const listId = parseInt(route.params.listId2 || route.params.listId)
+  isSelectedId.value = ''
+  if (listId < 300000) {
+    const assignMember = await request.getAssignMemberId({ listId, taskId: taskId.value })
+    if (assignMember.userId) {
+      isSelectedId.value = assignMember.userId
+    }
+  }
+})
+
+// 打开/关闭任务指派模态框
+const handleShowTaskAssign = () => {
+  showTaskAssignSetting.value = !showTaskAssignSetting.value
+}
+
+// 选中成员进行任务指派
+const handleSelectMember = async (id) => {
+  const listId = parseInt(route.params.listId2 || route.params.listId)
+
+  isSelectedId.value = id
+
+  try {
+    const params = {
+      userId: id,
+      listId,
+      taskId: taskId.value
+    }
+    const userName = storage.getItem('userInfo').userName
+    await request.assignMemberTask(params)
+    await request.sendTaskNotice({ flag: 'assign',  userName, listId, taskInfo: subViewTask.taskInfo, taskId: taskId.value})
+  } catch (error) {
+    console.log(`${error}`)
+  }
+}
+
+// 移除任务指派
+const handleRemoveAssign = async () => {
+  const listId = parseInt(route.params.listId2 || route.params.listId)
+  
+  isSelectedId.value = ''
+
+  try {
+    const params = {
+      listId,
+      taskId: taskId.value
+    }
+
+    const userName = storage.getItem('userInfo').userName
+    await request.deleteAssignMember(params)
+    await request.sendTaskNotice({ flag: 'rassign',  userName, listId, taskInfo: subViewTask.taskInfo, taskId: taskId.value})
+  } catch (error) {
+    console.log(`${error}`)
+  }
+}
+/* ------------------------ */
 
 //! 点击模态背景相关逻辑区域
 /* ------------------------ */
+// 是否重置任务通用设定标记
 const reset = ref(false)
+
 // 模态检测关闭任务通用设定还是优先级设定
 const handleCloseTaskSettings = () => {
   if (showTaskSetting.value) {
@@ -753,6 +906,8 @@ const handleCloseTaskSettings = () => {
     }, 0)
   } else if (showTaskPriority.value) {
     handleShowTaskPriority()
+  } else if (showTaskAssignSetting.value) {
+    handleShowTaskAssign()
   } else {
     handleShowTaskList()
   }
@@ -763,8 +918,19 @@ const handleCloseTaskSettings = () => {
 // 获取用户设定任务相关默认值
 ;(async() => {
   try {
-    const res = await request.getUserTaskDefault()
+    const listId = parseInt(route.params.listId2 || route.params.listId)
+    const res = await request.getUserTaskDefault()  // 获取任务设定默认值
     Object.assign(timeAndDateData, res.timeAndDate)
+
+    if (listId < 300000) {
+      const shareMembersRes = await request.getShareUsers({ listId })
+      members.value.push(...shareMembersRes)
+
+      const assignMember = await request.getAssignMemberId({ listId, taskId: taskId.value })
+      if (assignMember.userId) {
+        isSelectedId.value = assignMember.userId
+      }
+    }    
   } catch (error) {
     console.log(`${error}`)
   }
@@ -780,6 +946,7 @@ const handleCloseTaskSettings = () => {
 
   &__taskHeader {
     position: relative;
+    z-index: 6;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -828,9 +995,76 @@ const handleCloseTaskSettings = () => {
     }
 
     &__right {
+      display: flex;
+      align-items: center;
       margin-left: auto;
       .priorityIcon {
         font-size: .18rem;
+        position: relative;
+        z-index: 1000;
+      }
+
+      .memberIcon {
+        font-size: .25rem;
+        margin-left: .05rem;
+        position: relative;
+        z-index: 1000;
+      }
+    }
+
+    &__taskAssign {
+      position: absolute;
+      z-index: 9;
+      top: .28rem;
+      right: .12rem;
+      width: 1.2rem;
+      font-size: .13rem;
+      background-color: #fff;
+      color: $base-fontColor;
+      border-radius: .05rem;
+      padding: .05rem 0 .05rem 0;
+
+      .title {
+        font-size: .14rem;
+        padding: 0rem .05rem .02rem .05rem;
+        border-bottom: .01rem solid rgba(228, 228, 228, 0.555);
+      }
+
+      .membersList {
+        padding: .05rem .05rem .02rem .05rem;
+
+        .notAssign {
+          display: flex;
+          align-items: center;
+          padding: .05rem 0 .05rem .03rem;
+          cursor: pointer;
+
+          .icon {
+            font-size: .17rem;
+            margin-right: .03rem;
+            color: $base-fontColor !important;
+            position: relative;
+            z-index: 1000;
+          }
+        }
+
+        .member {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: .05rem 0 .05rem .03rem;
+          cursor: pointer;
+
+          .selected {
+            font-size: .17rem;
+            color: $base-fontColor !important;
+          }
+        }
+
+        .notAssign:hover, .member:hover {
+          background-color: rgba(238, 238, 238, 0.712);
+          border-radius: .02rem;
+        }
       }
     }
   }
@@ -964,7 +1198,7 @@ const handleCloseTaskSettings = () => {
       left: .13rem;
       bottom: .4rem;
       padding: .05rem 0;
-      z-index: 2;
+      z-index: 6;
       box-sizing: border-box;
       background: rgba(255, 255, 255, 0.5);
       border-radius: .05rem;
@@ -990,6 +1224,44 @@ const handleCloseTaskSettings = () => {
     left: 0;
     right: 0;
     bottom: 0;
+    z-index: 5;
+  }
+}
+
+@media screen and (max-width: 1100px) {
+  /* 设置主界面响应式 */
+  .TaskInfo {
+    .iconfont {
+      color: rgb(48, 48, 48) !important;
+    }
+
+    &__taskHeader {
+      &__left {
+        .date {
+          box-shadow: -1.5px 0px 1px -1px rgb(48, 48, 48);
+        }
+      }
+
+      &__taskAssign {
+        box-shadow: 0px 0px 3px 1px rgba(204, 204, 204, 0.658);
+      }
+    }
+
+    &__taskMain {
+      &__taskFiles {
+        box-shadow: 0px 0px 3px 1px rgba(204, 204, 204, 0.658);
+      }
+    }
+
+    &__taskFooter {
+      &__lists {
+        box-shadow: 0px 0px 3px 1px rgba(204, 204, 204, 0.658);
+      }
+
+      .listItem:hover{
+        background: rgba(216, 216, 216, 0.6);
+      }
+    }
   }
 }
 </style>

@@ -13,12 +13,18 @@ import users from './modules/users'
 import customSetting from './modules/customSetting'
 import lists from './modules/lists'
 import tasks from './modules/tasks'
+import notice from './modules/notifications'
+import aside from './modules/aside'
+import chat from './modules/chat'
 
 export default createStore({
   modules: {
     users,
     customSetting,
     lists,
-    tasks
+    tasks,
+    notice,
+    aside,
+    chat
   }
 })

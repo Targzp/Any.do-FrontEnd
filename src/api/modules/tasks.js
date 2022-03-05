@@ -18,6 +18,36 @@ export const getUserAllTasks = () => {
   })
 }
 
+// 查询用户任务接口调用定义
+export const searchUserTask = (params) => {
+  return request({
+    method: 'post',
+    url: '/tasks/searchTask',
+    data: params,
+    mock: false
+  })
+}
+
+// 获取指定任务接口调用定义
+export const getUserTask = (params) => {
+  return request({
+    method: 'post',
+    url: '/tasks/gettask',
+    data: params,
+    mock: false
+  })
+}
+
+// 获取用户任务动态列表数据接口
+export const getTaskDevelopments = (params) => {
+  return request({
+    method: 'post',
+    url: '/tasks/gettaskdevelopment',
+    data: params,
+    mock: false
+  })
+}
+
 // 提交用户添加任务数据接口调用定义
 export const postUserAddTask = (params) => {
   return request({
@@ -76,6 +106,16 @@ export const deleteUserTaskFile = (params) => {
   return request({
     method: 'post',
     url: `/tasks/deletefile/${params.value}`,
+    data: params,
+    mock: false
+  })
+}
+
+// 任务邮件通知
+export const userTaskMailNotify = (params) => {
+  return request({
+    method: 'post',
+    url: `/tasks/taskmailnotify`,
     data: params,
     mock: false
   })

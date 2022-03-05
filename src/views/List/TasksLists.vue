@@ -1,13 +1,13 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-12-02 14:10:07
- * @LastEditTime: 2022-01-27 21:22:00
+ * @LastEditTime: 2022-03-01 17:33:24
  * @LastEditors: 胡晨明
  * @Description: 任务列表组件
  * @FilePath: \Anydo-app\src\views\List\TasksLists.vue
 -->
 <template>
-  <div class="taskLists">
+  <div :class="['taskLists', (isHide + isHide2 === 2)?'taskLists--hide':'']">
     <el-scrollbar v-if="userTasks.length > 0">
       <!-- 任务列表 -->
       <div
@@ -35,7 +35,7 @@
                   v-if="syncListId !== 3"
                   size="medium"
                   class="doneCheck"
-                  @change="() => { handleCompleteTask({ id: element.id, listId: element.listId, taskId: element.taskId, flag: 'done', value: 1 }) }"
+                  @change="() => { handleCompleteTask({ id: element.id, listId: element.listId, taskId: element.taskId, taskInfo: element.task && element.task.taskInfo, flag: 'done', value: 1 }) }"
                 />
                 <div
                   class="optLink"
@@ -104,7 +104,7 @@
                     <el-checkbox
                       size="medium"
                       class="doneCheck"
-                      @change="() => { handleCompleteTask({ id: element.id, listId: element.listId, taskId: element.taskId, flag: 'done', value: 1 }) }"
+                      @change="() => { handleCompleteTask({ id: element.id, listId: element.listId, taskId: element.taskId, taskInfo: element.task && element.task.taskInfo, flag: 'done', value: 1 }) }"
                     />
                     <span
                       class="taskInfo"
@@ -153,7 +153,7 @@
                       size="medium"
                       class="doneCheck"
                       checked
-                      @change="() => { handleCompleteTask({id: element.id, listId: element.listId, taskId: element.taskId, flag: 'done', value: 0, extValue: doneTask.doneTime}) }"
+                      @change="() => { handleCompleteTask({ id: element.id, listId: element.listId, taskId: element.taskId, taskInfo: element.task && element.task.taskInfo, flag: 'done', value: 0, extValue: doneTask.doneTime }) }"
                     />
                     <span
                       class="taskInfo"
@@ -179,11 +179,14 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
 import draggable from 'vuedraggable'
 import listsColumn from '@/components/listsColumn.vue'
 import dayjs from 'dayjs'
+import storage from '@/utils/storage'
+import request from '../../api/index'
 import { ElMessageBox } from 'element-plus'
 
 const router = useRouter()
@@ -199,12 +202,57 @@ const syncListId = ref(props.listId)
 // 状态管理仓库
 const store = useStore()
 
+const isHide = computed(() => {
+  return store.state.aside.isHide
+})
+
+const isHide2 = computed(() => {
+  return store.state.aside.isHide2
+})
+
 // 清单列表及对应的任务集合显示标记
 const userLists = store.state.lists.userLists
 const showLists = reactive({})
 watch(() => userLists, (val) => {
-  val.map((item) => {
+  val.map(async (item) => {
     showLists[item.listId] = true
+
+    if (props.listId === 0 && item.listId > 300000) {
+      const listTasks = await request.getShareTasks({ listId: item.listId })
+      if (listTasks && listTasks.length > 0) {
+        listTasks.forEach(item => {
+          store.commit('addUserTask', item)
+        })
+      }
+    }
+
+    if (props.listId === 1 && item.listId > 300000) {
+      const listTasks = await request.getShareTasks({ listId: item.listId })
+      // 获取今天的开始和结束时间戳
+      const todayStart = dayjs().startOf('day').valueOf() + ''
+      const todayEnd = dayjs().endOf('day').valueOf() + ''
+
+      listTasks.forEach(item => {
+        if (item.task.taskDate && item.task.taskDate + '' === todayStart) {
+          setTimeout(() => {
+            store.commit('addUserTask', item)
+          }, 100)
+          return
+        }
+
+        const startDate = item.task.startTaskDate
+        const endDate = item.task.endTaskDate
+        if (
+          (startDate>= todayStart && startDate <= todayEnd) ||
+          (endDate >= todayStart && endDate <= todayEnd) ||
+          (startDate <= todayStart && endDate >= todayEnd)
+        ) {
+          setTimeout(() => {
+            store.commit('addUserTask', item)
+          }, 100)
+        }
+      })
+    }
   })
 }, {
   deep: true,
@@ -219,6 +267,51 @@ watch(() => props.listId, (val) => {
   store.dispatch('getUserTasks', val).then(() => {
     syncListId.value = val
   })
+
+  let shareListsIds = []
+  userLists.forEach(item => {
+    if (item.listId > 300000) {
+      shareListsIds.push(item.listId)
+    }
+  })
+  if (val === 0) {
+    shareListsIds.forEach(async (item) => {
+      const listTasks = await request.getShareTasks({ listId: item })
+      if (listTasks && listTasks.length > 0) {
+        listTasks.forEach(item => {
+          store.commit('addUserTask', item)
+        })
+      }
+    })
+  } else if (val === 1) {
+    shareListsIds.forEach(async (item) => {
+      const listTasks = await request.getShareTasks({ listId: item })
+      // 获取今天的开始和结束时间戳
+      const todayStart = dayjs().startOf('day').valueOf() + ''
+      const todayEnd = dayjs().endOf('day').valueOf() + ''
+
+      listTasks.forEach(item => {
+        if (item.task.taskDate && item.task.taskDate + '' === todayStart) {
+          nextTick(() => {
+            store.commit('addUserTask', item)
+          })
+          return
+        }
+
+        const startDate = item.task.startTaskDate
+        const endDate = item.task.endTaskDate
+        if (
+          (startDate>= todayStart && startDate <= todayEnd) ||
+          (endDate >= todayStart && endDate <= todayEnd) ||
+          (startDate <= todayStart && endDate >= todayEnd)
+        ) {
+          nextTick(() => {
+            store.commit('addUserTask', item)
+          })
+        }
+      })
+    })
+  }
 })
 
 // 任务拖拽标记
@@ -236,8 +329,11 @@ const handleCompleteTask = (settingValues) => {
     settingValues.extValue = dayjs().startOf('day').valueOf() + ''  // 设置任务结束日期时间戳
   }
   store.dispatch('setUserTask', settingValues)
-  .then(() => {
-    router.back()
+  .then(async () => {
+    if (settingValues.value) {
+      const userName = storage.getItem('userInfo').userName
+      await request.sendTaskNotice({ flag: 'done',  userName, listId: settingValues.listId, taskInfo: settingValues.taskInfo, taskId: settingValues.taskId})
+    }
   })
 }
 
@@ -321,6 +417,11 @@ const handleRevertTask = (settingValues) => {
 .taskLists {
   margin-top: .08rem;
   min-height: 80%;
+  position: relative;
+
+  &--hide {
+    z-index: 9;
+  }
   
   &__allTasks {
     margin: 0 .15rem;

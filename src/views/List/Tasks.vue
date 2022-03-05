@@ -1,35 +1,47 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-10-12 16:12:01
- * @LastEditTime: 2022-01-27 12:21:28
+ * @LastEditTime: 2022-03-05 23:19:30
  * @LastEditors: 胡晨明
  * @Description: 清单任务组件
  * @FilePath: e:\毕设项目\Anydo-app\src\views\List\Tasks.vue
 -->
 <template>
-  <div class="Tasks">
-    <div class="Tasks__list">
+  <div :class="['Tasks']">
+    <div :class="['Tasks__list', isHide2?'Tasks__list--spread':'']">
       <!-- 清单任务头部区域 -->
       <div class="Tasks__list__header">
         <div>
-          <span class="Tasks__list__header__shrink"><i class="el-icon-s-fold"></i></span>
+          <span
+            :class="['Tasks__list__header__shrink', (isHide + isHide2 === 2)?'Tasks__list__header__shrink--hide':'']"
+            @click="handleHideAside"
+          ><i class="el-icon-s-fold"></i></span>
           <span class="Tasks__list__header__title">{{selectedList.desc}}</span>
         </div>
-        <span
-          title="共享"
-          class="iconfont Tasks__list__header__other-icon1"
-          v-if="!([0, 1, 2, 3].includes(listId))"
-        >&#xe6c7;</span>
-        <span
-          title="清空"
-          class="iconfont Tasks__list__header__other-icon2"
-          v-if="listId === 3"
-          @click="handleBatchDeleteTask"
-        >&#xe6cc;</span>
+        <div :class="['Tasks__list__header__right', isHide2?'Tasks__list__header__right--hide':'']">
+          <span
+            title="共享"
+            class="iconfont Tasks__list__header__other-icon1"
+            v-if="!([0, 1, 2, 3].includes(listId)) && listId < 300000"
+            @click="handleOpenListsShareDialog"
+          >&#xe6c7;</span>
+          <span
+            title="展开"
+            class="iconfont Tasks__list__header__other-icon3"
+            v-if="listId !== 3"
+            @click="handleHideTaskDetail"
+          >&#xe87e;</span>
+          <span
+            title="清空"
+            class="iconfont Tasks__list__header__other-icon2"
+            v-if="listId === 3"
+            @click="handleBatchDeleteTask"
+          >&#xe6cc;</span>
+        </div>
       </div>
       <!-- 任务增加区域 -->
       <div
-        class="Tasks__list__addTask"
+        :class="['Tasks__list__addTask', (isHide + isHide2 === 2)?'Tasks__list__addTask--hide':'']"
         v-if="showAddTask"
       >
         <!-- 新任务输入框 -->
@@ -57,6 +69,9 @@
           :newTask="newTask"
           :taskDefaultData="taskDefaultData"
           :timeAndDateData="timeAndDateData"
+          :defaultDate="defaultDate"
+          :defaultStartDate="defaultStartDate"
+          :defaultEndDate="defaultEndDate"
           :isReset="reset"
           :offset="0.05"
           @saveTaskSetting="handleSaveTaskSetting"
@@ -93,6 +108,7 @@
                 >
                   <el-checkbox
                     class="selectLists__checkBox"
+                    :checked="selectedListId === list.listId"
                     @change="() => { handleSelectList(list.listId) }"
                     :disabled="disable && selectedListId !== list.listId"
                   />
@@ -115,7 +131,10 @@
       <TaskLists :listId="parseInt(route.params.listId)"/>
     </div>
     <!-- 任务详细信息展示区域 -->
-    <div class="Tasks__detail" v-if="showTaskDetail">
+    <div
+      :class="['Tasks__detail', isHide2?'Tasks__detail--shrink':'', !isHide2?'Tasks__detail--show':'']"
+      v-if="showTaskDetail"
+    >
       <!-- 没有选中任务时的默认展示 -->
       <div
         class="Tasks__detail__initial"
@@ -132,19 +151,38 @@
       class="Tasks__modal"
       @click="() => { handleCloseTaskSettings(false) }"
     ></div>
+    <!-- Modal 区域。共享清单模态框组件 -->
+    <el-dialog
+      title="共享清单"
+      v-model="shareListTrigger"
+      center
+      :width="450"
+      :append-to-body="true"
+      :destroy-on-close="true"
+      :show-close="false"
+    >
+      <ListsShareDialog
+        @handleCancel="handleCloseListsShareDialog"
+        :listId="listId"
+      />
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useStore } from 'vuex'
 import request from '../../api/index'
+import storage from '@/utils/storage'
+import dayjs from 'dayjs'
 import _ from 'lodash'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { setNewTaskNotify } from '@/utils/tasksNotify'
 import TaskLists from './TasksLists.vue'
 import TasksGeneralSetting from './TasksGeneralSetting.vue'
 import TasksPrioritySetting from './TasksPrioritySetting.vue'
+import ListsShareDialog from './ListsShareDialog.vue'
 
 // 状态管理仓库
 const store = useStore()
@@ -185,13 +223,34 @@ const showAddTask = ref(true)
 const showTaskDetail = ref(true)
 
 // 清单 id 值
-const listId = ref(0)
+const listId = ref(+route.params.listId)
+
+const isHide = computed(() => {
+  return store.state.aside.isHide
+})
+
+const isHide2 = computed(() => {
+  return store.state.aside.isHide2
+})
 
 //! 获取当前用户选择清单名和flag
 const selectedList = reactive({
   desc: '',
   placeHolder: ''
 })
+watch(
+  () => userLists,
+  (lists) => {
+    // 根据 listId 在清单中寻找对应清单
+    lists.forEach((list) => {
+      if (list.listId === listId.value) {
+        selectedList.desc = `${list.listFlag} ${list.listName}`
+        selectedList.placeHolder = `添加任务至 ${list.listName}`
+      }
+    })
+  },
+  { immediate: true, deep: true }
+)
 watch(
   () => route.params.listId, 
   (val) => {
@@ -240,6 +299,15 @@ watch(
   { immediate: true }
 )
 
+//! 缩放用户侧边栏及任务信息侧边栏逻辑区域
+const handleHideAside = () => {
+  store.commit('changeIsHide')
+}
+
+const handleHideTaskDetail = () => {
+  store.commit('changeIsHide2')
+}
+
 //! 新增任务展示逻辑区域
 // 新增任务设置展开/关闭状态变量
 const showTaskSetting = ref(false)
@@ -260,12 +328,12 @@ const reset = ref(false)
 const handleResetTaskSetting = (flag) => {
   // 将任务设定值进行合并重置
   Object.assign(newTask, {
-    taskInfo: flag==='modal'?newTask.taskInfo:'',
-    taskDate: '',
+    taskInfo: flag === 'modal'?newTask.taskInfo:'',
+    taskDate: newTask.taskDate || '',
     taskTime: '',
-    startTaskDate: '',
+    startTaskDate: newTask.startTaskDate || '',
     startTaskTime: '',
-    endTaskDate: '',
+    endTaskDate: newTask.endTaskDate || '',
     endTaskTime: '',
     notify: taskDefaultData.defaultNotify,
     taskPriority: flag === 'modal'?newTask.taskPriority:taskDefaultData.defaultPriority // 提交任务之后重置优先级
@@ -324,7 +392,7 @@ const selectListTrigger = ref(false)
 const disable = ref(false)
 
 // 用户当前选择的清单 listId
-const selectedListId= ref(0)
+const selectedListId = ref(0)
 
 // 用户选择清单
 const handleSelectList = (val) => {
@@ -351,6 +419,10 @@ const handleAddTask = () => {
 
   // 如果 listId 为 all 则打开清单列表供用户选择
   if (listId.value === 0 || listId.value === 1) {
+    if (taskDefaultData.defaultList) {
+      selectedListId.value = taskDefaultData.defaultList || 0
+      disable.value = true
+    }
     selectListTrigger.value = true
     return
   }
@@ -380,13 +452,16 @@ const handleSubmitTask = async (listId) => {
   }
   const params = { listId, task }
 
-  store.dispatch('saveUserTaskDB', params)
-  .then((id) => {
-    console.log('id: ', id)
-    setNewTaskNotify(id, task)
-    ElMessage.success('添加成功')
-    handleResetTaskSetting()  // 重置任务设定
-  })
+  const { id, taskId } = await store.dispatch('saveUserTaskDB', params)
+  setNewTaskNotify(id, task)
+  ElMessage.success('添加成功')
+  handleResetTaskSetting()  // 重置任务设定
+
+  // 发送添加任务实时通知
+  if (listId > 300000) {
+    const userName = storage.getItem('userInfo').userName
+    await request.sendTaskNotice({ flag: 'add', userName, listId, taskInfo: task.taskInfo, taskId})
+  }
 }
 
 // 选择清单模态框关闭操作
@@ -419,16 +494,52 @@ const handleBatchDeleteTask = () => {
   })
 }
 
+//! 清单共享逻辑区域
+const shareListTrigger = ref(false)
+
+// 打开清单共享模态框
+const handleOpenListsShareDialog = () => {
+  shareListTrigger.value = true
+}
+
+// 关闭清单共享模态框
+const handleCloseListsShareDialog = () => {
+  shareListTrigger.value = false
+}
+
 //! 获取任务默认值逻辑区域
+// 默认日期值
+const defaultDate = ref(0)
+// 默认开始日期值
+const defaultStartDate = ref('')
+// 默认结束日期值
+const defaultEndDate = ref('')
+
 // 获取用户设定任务相关默认值
 ;(async () => {
   try {
-    const res = await request.getUserTaskDefault()
-    const { taskDefault, timeAndDate } = res
+    const res = await request.getCustomSettings()
+    const { taskDefault, timeAndDate, notify } = res
     Object.assign(taskDefaultData, taskDefault)
+    store.commit('saveUserNotify', notify)
     newTask.notify = taskDefaultData.defaultNotify  // 将默认提醒进行赋值
     newTask.taskPriority = taskDefaultData.defaultPriority    // 将默认优先级进行赋值
     Object.assign(timeAndDateData, timeAndDate)
+
+    // 根据用户设置的默认任务日期进行时间设定
+    if (taskDefault.defaultDate === 'td') {
+      defaultDate.value = dayjs().startOf('day').valueOf()
+      defaultStartDate.value = dayjs().startOf('day').valueOf() + ''
+      defaultEndDate.value = dayjs().endOf('day').valueOf() + ''
+    } else if (taskDefault.defaultDate === 'tm') {
+      defaultDate.value = dayjs().add(1, 'day').startOf('day').valueOf()
+      defaultStartDate.value = dayjs().add(1, 'day').startOf('day').valueOf() + ''
+      defaultEndDate.value = dayjs().add(1, 'day').endOf('day').valueOf() + ''
+    } else if (taskDefault.defaultDate === 'at') {
+      defaultDate.value = dayjs().add(2, 'day').startOf('day').valueOf()
+      defaultStartDate.value = dayjs().add(2, 'day').startOf('day').valueOf() + ''
+      defaultEndDate.value = dayjs().add(2, 'day').endOf('day').valueOf() + ''
+    }
   } catch (error) {
     console.log(`${error}`)
   }
@@ -438,18 +549,24 @@ const handleBatchDeleteTask = () => {
 <style lang="scss">
 @import '../../assets/style/variables.scss';
 .Tasks {
+  width: 100%;
   height: 100%;
   display: flex;
   position: relative;
 
   &__list {
     height: 100%;
-    flex: 3 1 0%;
+    flex: 3 0 0%;
     padding: .15rem 0;
     box-sizing: border-box;
     box-shadow: 1px 0px 1px -1px rgb(255, 255, 255);
     display: flex;
     flex-flow: column;
+    transition: all .45s ease;
+
+    &--spread {
+      flex-basis: 100%;
+    }
 
     &__header {
       display: flex;
@@ -463,14 +580,36 @@ const handleBatchDeleteTask = () => {
         margin-right: .1rem;
         cursor: pointer;
         color: $icon-color;
+        position: relative;
+        z-index: 5;
+
+        &--hide {
+          z-index: 999;
+        }
+      }
+
+      &__right {
+        display: flex;
+        align-items: center;
+        position: relative;
+        z-index: 9;
+
+        &--hide {
+          z-index: 11;
+        }
       }
 
       &__other-icon1 {
         font-size: .2rem;
+        margin-right: .13rem;
       }
 
       &__other-icon2 {
         font-size: .28rem;
+      }
+
+      &__other-icon3 {
+        font-size: .18rem;
       }
     }
 
@@ -479,6 +618,10 @@ const handleBatchDeleteTask = () => {
       align-items: center;
       margin: .1rem .15rem 0 .15rem;
       position: relative;
+      
+      &--hide {
+        z-index: 10;
+      }
 
       &__taskIcons {
         display: flex;
@@ -504,6 +647,8 @@ const handleBatchDeleteTask = () => {
       }
 
       &__addBtn {
+        position: relative;
+        top: .005rem;
         border-radius: 0rem;
         background-color: rgba(255, 255, 255, 0.178);
       }
@@ -560,8 +705,20 @@ const handleBatchDeleteTask = () => {
   }
 
   &__detail {
+    width: 5%;
     padding: .15rem 0 0 0;
-    flex: 2 1 0%;
+    flex-grow: 2;
+    flex-shrink: 1;
+    transition: all .45s ease;
+    position: relative;
+    z-index: 6;
+
+    &--shrink {
+      transform: translateX(150px);
+      opacity: 0;
+      width: 0rem;
+    }
+
     &__initial {
       margin-top: 1.31rem;
       display: flex;
@@ -588,6 +745,26 @@ const handleBatchDeleteTask = () => {
     left: 0;
     right: 0;
     bottom: 0;
+    z-index: 9;
+  }
+}
+
+@media screen and (max-width: 1100px) {
+  /* 设置主界面响应式 */
+  .Tasks {
+    &__detail {
+      width: 75%;
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      right: 0;
+      z-index: 9;
+      background-color: #fff;
+
+      &--show {
+        z-index: 11;
+      }
+    }
   }
 }
 </style>
