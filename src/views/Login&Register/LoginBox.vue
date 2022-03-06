@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-09-17 17:34:59
- * @LastEditTime: 2022-01-25 10:42:30
+ * @LastEditTime: 2022-03-06 21:21:52
  * @LastEditors: 胡晨明
  * @Description: 登录模块页面组件
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\Login&Register\LoginBox.vue
@@ -154,8 +154,12 @@ const rules = {
 const handleChangeModel = (tip) => {
   if (tip === 'password') {
     loginModel.value = true
+    user.userMail = ''
+    user.userCode = ''
   } else {
     loginModel.value = false
+    user.userName = ''
+    user.userPwd = ''
   }
 
   // 切换登录模式时删除之前模式的值

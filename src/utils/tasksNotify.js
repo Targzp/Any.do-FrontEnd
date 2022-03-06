@@ -2,7 +2,7 @@
  * @Author: 胡晨明
  * @Date: 2022-01-24 10:09:15
  * @LastEditors: 胡晨明
- * @LastEditTime: 2022-03-05 23:22:38
+ * @LastEditTime: 2022-03-07 00:03:08
  * @Description: 任务定时通知配置文件
  */
 import storage from './storage'
@@ -147,6 +147,15 @@ export function resetTaskNotify (id, task) {
     const index = todayTasks.findIndex(item => item.id === id)
     todayTasks.splice(index, 1)
   }
+}
+
+//* 清除指定任务定时器
+export function clearNotifyFlag (id) {
+  hourTasksFlags.forEach(item => {
+    if (item.id === id) {
+      clearTimeout(item.notifyFlag)
+    }
+  })
 }
 
 //* 清除定时器

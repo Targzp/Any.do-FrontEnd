@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-10-12 16:12:41
- * @LastEditTime: 2022-02-28 17:40:11
+ * @LastEditTime: 2022-03-07 00:02:45
  * @LastEditors: 胡晨明
  * @Description: 查看任务详细信息组件
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\List\TaskDetail.vue
@@ -234,7 +234,7 @@ import TasksDevelopment from './TasksDevelopment.vue'
 import request from '@/api/index'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Base64 } from 'js-base64'
-import { resetTaskNotify } from '@/utils/tasksNotify'
+import { clearNotifyFlag, resetTaskNotify } from '@/utils/tasksNotify'
 
 // 状态管理仓库
 const store = useStore()
@@ -686,6 +686,7 @@ const handleDeleteTask = () => {
       type: 'warning'
     }
   ).then(() => {
+    clearNotifyFlag(id) // 清除该任务定时器
     store.dispatch('setUserTask', { 
       id,
       taskId: taskIdVal,

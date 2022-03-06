@@ -1,10 +1,9 @@
 /*
  * @Author: 胡晨明
  * @Date: 2021-12-11 20:35:48
- * @LastEditTime: 2021-12-11 20:40:47
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2022-03-06 21:30:44
+ * @LastEditors: 胡晨明
  * @Description: 登录注册相关接口
- * @FilePath: \Anydo-app\src\api\modules\logReg.js
  */
 import request from '@/utils/request'
 

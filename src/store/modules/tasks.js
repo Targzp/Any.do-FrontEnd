@@ -1,7 +1,7 @@
 /*
  * @Author: 胡晨明
  * @Date: 2021-12-01 23:09:10
- * @LastEditTime: 2022-03-02 16:35:35
+ * @LastEditTime: 2022-03-07 00:07:49
  * @LastEditors: 胡晨明
  * @Description: 用户任务状态管理
  * @FilePath: \Anydo-app\src\store\modules\tasks.js
@@ -11,7 +11,7 @@ import dayjs from 'dayjs'
 import request from '@/api/'
 import _ from 'lodash'
 import setTaskDevelopment from '../utils/setTaskDevelopment'
-import tasksNotify from '@/utils/tasksNotify'
+import tasksNotify, { setNewTaskNotify } from '@/utils/tasksNotify'
 
 // initial state
 const state = () => ({
@@ -80,7 +80,6 @@ const mutations = {
    */
   deleteShareUserTask (state, params) {
     const index = state.userTasks.findIndex(task => task.listId === params.listId && task.taskId === params.taskId)
-    console.log('index: ', index);
     if (index > -1) {
       state.userTasks.splice(index, 1)
     }
@@ -384,6 +383,15 @@ const actions = {
       // 缓存指定 listId 清单任务集合
       if (listId > 300000) {
         tasks = await request.getShareTasks({ listId })
+        console.log('tasks: ', tasks)
+        // 为共享任务设定定时提醒
+        // tasks.forEach(item => {
+        //   const taskId = item.id
+        //   const task = item.task
+        //   console.log('task: ', task)
+
+        //   setNewTaskNotify(taskId, task)
+        // })
       } else {
         tasks = await db.tasks.filter((value) => {
           return value.listId === listId && !value.task.doneFlag && !value.task.softDelFlag
