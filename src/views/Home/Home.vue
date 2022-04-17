@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-09-16 16:31:52
- * @LastEditTime: 2022-03-04 09:31:14
+ * @LastEditTime: 2022-03-09 10:00:44
  * @LastEditors: 胡晨明
  * @Description: 应用界面框架
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\Home.vue
@@ -95,7 +95,7 @@ window.addEventListener('resize', (e) => {
 
   &__container {
     width: 80%;
-    height: 6.5rem;
+    height: 6.8rem;
     position: absolute;
     left: 50%;
     top: 50%;

@@ -2,7 +2,7 @@
  * @Author: 胡晨明
  * @Date: 2022-01-29 14:59:32
  * @LastEditors: 胡晨明
- * @LastEditTime: 2022-01-30 00:13:21
+ * @LastEditTime: 2022-03-14 20:17:44
  * @Description: 用户消息通知状态管理
  */
 import storage from '../../utils/storage'
@@ -25,7 +25,7 @@ const mutations = {
 
     state.notifications.splice(0, state.notifications.length)
     state.notifications.push(...orderNotifications)
-    
+
     storage.setItem('userNotifications', state.notifications)
   },
   /**
@@ -34,6 +34,11 @@ const mutations = {
    * @param {*} notification
    */ 
   addUserNotification(state, notification) {
+    for (let item of state.notifications) {
+      if (_.isEqual(item, notification)) {
+        return
+      }
+    }
     state.notifications.unshift(notification)
     storage.setItem('userNotifications', state.notifications)
   },

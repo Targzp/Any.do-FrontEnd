@@ -2,7 +2,7 @@
  * @Author: 胡晨明
  * @Date: 2022-02-09 09:26:28
  * @LastEditors: 胡晨明
- * @LastEditTime: 2022-03-02 10:06:16
+ * @LastEditTime: 2022-03-15 13:37:11
  * @Description: 专注页面组件
 -->
 <template>
@@ -12,7 +12,9 @@
       <span
         class="Focus__header__shrink"
         @click="handleHideAside"
-      ><i class="el-icon-s-fold"></i></span>
+      >
+        <i :class="['el-icon-s-fold', isHide?'el-icon-s-fold--hide':'']"></i>
+      </span>
       <el-button
         plain
         round
@@ -171,7 +173,10 @@
           </section>
         </div>
         <!-- 专注统计数据可视化 -->
-        <el-scrollbar v-if="!isFocus && focusStatistics" height="530px" style="margin-top: 10px;">
+        <el-scrollbar
+          v-if="!isFocus && focusStatistics"
+          style="margin-top: 10px;"
+        >
           <div
             class="Focus__body__main__statistics"
           >
@@ -414,7 +419,7 @@ const handleStartFocus = () => {
   handleFocusing()
 }
 
-//* 点击取消关注逻辑
+//* 点击取消专注逻辑
 const handleCancelFocus = () => {
   ElMessageBox.confirm(
     '确认取消专注吗?',
@@ -628,7 +633,7 @@ watch(() => focusStatistics.value, async (val) => {
   flex-flow: column nowrap;
   font-size: .16rem;
   background: rgba(255, 255, 255, 0.2);
-  border-radius: .02rem;
+  border-radius: .1rem;
   transition: all .5s ease;
 
   &--spread {
@@ -648,6 +653,14 @@ watch(() => focusStatistics.value, async (val) => {
       font-size: .23rem;
       cursor: pointer;
       color: $icon-color;
+
+      .el-icon-s-fold {
+        transition: .3s ease;
+
+        &--hide {
+          transform: rotateZ(180deg);
+        }
+      }
     }
 
     .timeLine {
@@ -663,6 +676,7 @@ watch(() => focusStatistics.value, async (val) => {
     flex: 1;
     display: flex;
     flex-flow: column nowrap;
+    max-height: 82%;
 
     &__inputFocus {
       display: flex;
@@ -751,6 +765,7 @@ watch(() => focusStatistics.value, async (val) => {
       flex: 1;
       position: relative;
       z-index: 10;
+      height: 100%;
 
       &__flag {
         display: flex;
@@ -893,6 +908,10 @@ watch(() => focusStatistics.value, async (val) => {
             flex: 1;
             display: flex;
             align-items: center;
+
+            > div:first-child {
+              width: 0rem !important;
+            }
           }
         }
 
@@ -911,6 +930,7 @@ watch(() => focusStatistics.value, async (val) => {
   .Focus {
     &--spread {
       margin-left: 0;
+      border-radius: 0;
     }
   }
 }

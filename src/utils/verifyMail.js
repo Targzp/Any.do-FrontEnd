@@ -1,8 +1,8 @@
 /*
  * @Author: 胡晨明
  * @Date: 2021-10-04 17:50:20
- * @LastEditTime: 2021-10-05 11:39:47
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2022-03-12 21:32:37
+ * @LastEditors: 胡晨明
  * @Description: 获取验证码相关逻辑（滑动拼图，发送验证码）
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\utils\verifyMail.js
  */
@@ -27,7 +27,6 @@ export const useSendCodeEffect = (user) => {
 
   // 判断邮箱是否已填
   const handleIsMailEmpty = () => {
-
     if (!user.userMail) {
       ElMessage.warning('请输入邮箱')
       return

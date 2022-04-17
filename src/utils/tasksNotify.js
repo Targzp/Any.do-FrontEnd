@@ -2,7 +2,7 @@
  * @Author: 胡晨明
  * @Date: 2022-01-24 10:09:15
  * @LastEditors: 胡晨明
- * @LastEditTime: 2022-03-07 00:03:08
+ * @LastEditTime: 2022-03-19 15:39:17
  * @Description: 任务定时通知配置文件
  */
 import storage from './storage'
@@ -47,7 +47,7 @@ async function tasksNotify () {
       const startTaskDate = item.task.startTaskDate && +item.task.startTaskDate
       const taskTime = (item.task.taskTime && +item.task.taskTime) || (item.task.taskDate && +item.task.taskDate)
       const startTime = startTaskDate || taskTime
-      
+
       if (dayjs(startTime).isBetween(dayjs(todayDateStart), dayjs(todayDateEnd), null, '[]')) {
         todayTasks.push(item)
       }
@@ -98,7 +98,7 @@ export function setNewTaskNotify (id, task) {
   const startTaskDate = task.startTaskDate && +task.startTaskDate
   const taskTime = (task.taskTime && +task.taskTime) || (task.taskDate && +task.taskDate)
   const startTime = startTaskDate || taskTime
-  
+
   if (dayjs(startTime).isBetween(dayjs(todayDateStart), dayjs(todayDateEnd), null, '[]')) {
     todayTasks.push({ id, task })
   }
@@ -207,7 +207,9 @@ function setNotify (id, task, nowTime, hourStart, hourEnd) {
             type: 'warning',
             duration: 0
           })
-        } else if (userNotify.mailNotify) {
+        } 
+
+        if (userNotify.mailNotify) {
           // 邮箱通知
           const userMail = storage.getItem('userInfo').userMail
           const userName = storage.getItem('userInfo').userName

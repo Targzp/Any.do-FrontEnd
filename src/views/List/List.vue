@@ -1,7 +1,7 @@
 <!--
  * @Author: your name
  * @Date: 2021-10-12 16:06:02
- * @LastEditTime: 2022-02-08 15:19:50
+ * @LastEditTime: 2022-03-13 13:37:34
  * @LastEditors: 胡晨明
  * @Description: In User Settings Edit
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\List\List.vue
@@ -30,7 +30,7 @@ const isHide = computed(() => {
   height: 100%;
   font-size: .16rem;
   background: rgba(255, 255, 255, 0.2);
-  border-radius: .02rem;
+  border-radius: .1rem;
   transition: all .5s ease;
 
   &--spread {
@@ -43,6 +43,7 @@ const isHide = computed(() => {
   .List {
     &--spread {
       margin-left: 0;
+      border-radius: 0;
     }
   }
 }

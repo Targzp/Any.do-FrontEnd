@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-10-12 16:12:41
- * @LastEditTime: 2022-03-07 00:02:45
+ * @LastEditTime: 2022-03-09 14:03:05
  * @LastEditors: 胡晨明
  * @Description: 查看任务详细信息组件
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\List\TaskDetail.vue
@@ -136,7 +136,7 @@
               <div class="fileInfo__size">{{subViewTask.taskFile.fileSize}}K</div>
             </div>
             <el-dropdown class="fileSetting" trigger="click">
-              <div class="iconfont">&#xe618;</div>
+              <div class="iconfont fileSettingIcon">&#xe618;</div>
               <template #dropdown>
                 <el-dropdown-menu>
                   <el-dropdown-item
@@ -162,7 +162,7 @@
         @click="handleShowTaskList"
       >{{subViewListInfo}}</div>
       <el-dropdown class="TaskInfo__taskFooter__taskSetting" trigger="click">
-        <div class="iconfont">&#xe618;</div>
+        <div class="iconfont settingIcon">&#xe618;</div>
         <template #dropdown>
           <el-dropdown-menu>
             <el-dropdown-item>
@@ -333,7 +333,13 @@ const getTaskData = async () => {
     delete subViewTask.taskOptRecords
   }
 
-  Object.assign(subViewTask, task)
+  if (!_.isEmpty(task)) {
+    Object.assign(subViewTask, task)
+  } else {
+    if (listId || listId2) {
+      router.replace({ path: `/list/${route.params.listId}/tasks` })
+    }
+  }
 }
 // 获取指定任务数据。当其中 taskId 和 userTasks 响应式数据发生变化则重新执行该函数
 watchEffect(() => getTaskData())
@@ -415,8 +421,10 @@ const handleCompleteTask = () => {
   }
   store.dispatch('setUserTask', settingValues).then(async () => {
     router.back()
-    const userName = storage.getItem('userInfo').userName
-    await request.sendTaskNotice({ flag: 'done',  userName, listId, taskInfo: subViewTask.taskInfo, taskId: taskIdVal})
+    if (settingValues.value) {
+      const userName = storage.getItem('userInfo').userName
+      await request.sendTaskNotice({ flag: 'done',  userName, listId, taskInfo: subViewTask.taskInfo, taskId: taskIdVal})
+    }
   })
 }
 
@@ -697,7 +705,7 @@ const handleDeleteTask = () => {
     }).then(async () => {
       router.back()
       const userName = storage.getItem('userInfo').userName
-      await request.sendTaskNotice({ flag: 'delete',  userName, listId, taskInfo: subViewTask.taskInfo, taskId: taskId.value})
+      await request.sendTaskNotice({ flag: 'delete',  userName, listId, taskInfo: subViewTask.taskInfo, taskId: taskIdVal})
     })
   }).catch(() => {
     return
@@ -919,14 +927,18 @@ const handleCloseTaskSettings = () => {
 // 获取用户设定任务相关默认值
 ;(async() => {
   try {
+    const user = store.state.users.userInfo
     const listId = parseInt(route.params.listId2 || route.params.listId)
     const res = await request.getUserTaskDefault()  // 获取任务设定默认值
     Object.assign(timeAndDateData, res.timeAndDate)
 
     if (listId < 300000) {
       const shareMembersRes = await request.getShareUsers({ listId })
-      members.value.push(...shareMembersRes)
-
+      shareMembersRes.forEach(item => {
+        if (item._id !== user._id) {
+          members.value.push(item)
+        }
+      })
       const assignMember = await request.getAssignMemberId({ listId, taskId: taskId.value })
       if (assignMember.userId) {
         isSelectedId.value = assignMember.userId
@@ -953,10 +965,12 @@ const handleCloseTaskSettings = () => {
     align-items: center;
     height: .4rem;
     padding: 0 .15rem .1rem .15rem;
+    width: 100%;
     box-sizing: border-box;
     box-shadow: 0px 1px 1px -1px rgb(255, 255, 255);
 
     &__left {
+      width: 80%;
       display: flex;
       flex-flow: row nowrap;
       align-items: center;
@@ -975,6 +989,7 @@ const handleCloseTaskSettings = () => {
         }
       }
       .date {
+        width: 80%;
         display: flex;
         align-items: center;
         padding-left: .15rem;
@@ -988,9 +1003,8 @@ const handleCloseTaskSettings = () => {
           color: #235d97;
           font-size: .14rem;
           text-overflow: ellipsis;
-          overflow: hidden;
           white-space: nowrap;
-          width: 85%;
+          overflow: hidden;
         }
       }
     }
@@ -998,6 +1012,7 @@ const handleCloseTaskSettings = () => {
     &__right {
       display: flex;
       align-items: center;
+      text-align: right;
       margin-left: auto;
       .priorityIcon {
         font-size: .18rem;
@@ -1232,14 +1247,24 @@ const handleCloseTaskSettings = () => {
 @media screen and (max-width: 1100px) {
   /* 设置主界面响应式 */
   .TaskInfo {
-    .iconfont {
-      color: rgb(48, 48, 48) !important;
-    }
-
     &__taskHeader {
       &__left {
         .date {
           box-shadow: -1.5px 0px 1px -1px rgb(48, 48, 48);
+
+          &__Icon {
+            color: rgb(48, 48, 48) !important;
+          }
+        }
+      }
+
+      &__right {
+        .priorityIcon {
+          color: rgb(48, 48, 48) !important;
+        }
+
+        .memberIcon {
+          color: rgb(48, 48, 48) !important;
         }
       }
 
@@ -1251,16 +1276,36 @@ const handleCloseTaskSettings = () => {
     &__taskMain {
       &__taskFiles {
         box-shadow: 0px 0px 3px 1px rgba(204, 204, 204, 0.658);
+
+        .fileIcon {
+          color: rgb(48, 48, 48) !important;
+        }
+
+        .fileSetting {
+          .fileSettingIcon {
+            color: rgb(48, 48, 48) !important;
+          }
+        }
       }
     }
 
     &__taskFooter {
+      &__taskList:hover {
+        background: rgba(134, 134, 134, 0.2);
+      }
+
       &__lists {
         box-shadow: 0px 0px 3px 1px rgba(204, 204, 204, 0.658);
       }
 
       .listItem:hover{
         background: rgba(216, 216, 216, 0.6);
+      }
+
+      &__taskSetting {
+        .settingIcon {
+          color: rgb(48, 48, 48) !important;
+        }
       }
     }
   }

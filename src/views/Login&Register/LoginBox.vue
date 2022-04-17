@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-09-17 17:34:59
- * @LastEditTime: 2022-03-06 21:21:52
+ * @LastEditTime: 2022-03-19 12:06:01
  * @LastEditors: 胡晨明
  * @Description: 登录模块页面组件
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\Login&Register\LoginBox.vue
@@ -179,7 +179,7 @@ const handleLoginSubmit = () => {
           ElMessage.success('登录成功')
           store.commit('saveUserInfo', res)  //* 保存登录用户信息
           Socket.useWebSocket()  //* 登录成功后进行 webSocket 连接
-          store.dispatch('saveUserTasksDB')
+          store.dispatch('saveUserTasksDB') //* 获取后端全部用户任务数据
           router.push({ name: 'Home' })
         }
       } catch (error) {
@@ -219,7 +219,7 @@ defineEmits(['update:mode'])
     color: $base-fontColor;
     height: .6rem;
     background: rgba(255, 255, 255, .15);
-    border-radius: .02rem;
+    border-radius: .1rem;
     margin-bottom: .15rem;
     display: flex;
     justify-content: center;
@@ -239,7 +239,7 @@ defineEmits(['update:mode'])
     box-sizing: border-box;
     background: rgba(255, 255, 255, .2);
     position: relative;
-    border-radius: .02rem;
+    border-radius: .1rem;
     transition: all 0.5s ease;
     &__modelText{
         font-size: .18rem;

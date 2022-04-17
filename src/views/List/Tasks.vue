@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-10-12 16:12:01
- * @LastEditTime: 2022-03-05 23:19:30
+ * @LastEditTime: 2022-03-14 00:03:27
  * @LastEditors: 胡晨明
  * @Description: 清单任务组件
  * @FilePath: e:\毕设项目\Anydo-app\src\views\List\Tasks.vue
@@ -15,7 +15,11 @@
           <span
             :class="['Tasks__list__header__shrink', (isHide + isHide2 === 2)?'Tasks__list__header__shrink--hide':'']"
             @click="handleHideAside"
-          ><i class="el-icon-s-fold"></i></span>
+          >
+            <i
+              :class="['el-icon-s-fold', isHide?'el-icon-s-fold--hide':'']"
+            ></i>
+          </span>
           <span class="Tasks__list__header__title">{{selectedList.desc}}</span>
         </div>
         <div :class="['Tasks__list__header__right', isHide2?'Tasks__list__header__right--hide':'']">
@@ -27,7 +31,7 @@
           >&#xe6c7;</span>
           <span
             title="展开"
-            class="iconfont Tasks__list__header__other-icon3"
+            :class="['iconfont', 'Tasks__list__header__other-icon3', isHide2?'Tasks__list__header__other-icon3--hide':'']"
             v-if="listId !== 3"
             @click="handleHideTaskDetail"
           >&#xe87e;</span>
@@ -179,6 +183,7 @@ import dayjs from 'dayjs'
 import _ from 'lodash'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { setNewTaskNotify } from '@/utils/tasksNotify'
+import dailyNotify from '@/utils/dailyNotify'
 import TaskLists from './TasksLists.vue'
 import TasksGeneralSetting from './TasksGeneralSetting.vue'
 import TasksPrioritySetting from './TasksPrioritySetting.vue'
@@ -526,6 +531,10 @@ const defaultEndDate = ref('')
     newTask.taskPriority = taskDefaultData.defaultPriority    // 将默认优先级进行赋值
     Object.assign(timeAndDateData, timeAndDate)
 
+    if (notify.dailyNotifyTime.time) {
+      dailyNotify(notify.dailyNotifyTime) // 每日提醒设定定时器
+    }
+
     // 根据用户设置的默认任务日期进行时间设定
     if (taskDefault.defaultDate === 'td') {
       defaultDate.value = dayjs().startOf('day').valueOf()
@@ -566,6 +575,7 @@ const defaultEndDate = ref('')
 
     &--spread {
       flex-basis: 100%;
+      box-shadow: none;
     }
 
     &__header {
@@ -582,6 +592,14 @@ const defaultEndDate = ref('')
         color: $icon-color;
         position: relative;
         z-index: 5;
+
+        .el-icon-s-fold {
+          transition: .3s ease;
+
+          &--hide {
+            transform: rotateZ(180deg);
+          }
+        }
 
         &--hide {
           z-index: 999;
@@ -610,6 +628,11 @@ const defaultEndDate = ref('')
 
       &__other-icon3 {
         font-size: .18rem;
+        transition: .3s ease;
+
+        &--hide {
+          transform: rotateZ(-180deg);
+        }
       }
     }
 
@@ -753,7 +776,7 @@ const defaultEndDate = ref('')
   /* 设置主界面响应式 */
   .Tasks {
     &__detail {
-      width: 75%;
+      width: 60%;
       position: absolute;
       top: 0;
       bottom: 0;

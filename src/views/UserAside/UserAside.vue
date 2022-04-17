@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-10-09 16:57:58
- * @LastEditTime: 2022-02-13 20:26:50
+ * @LastEditTime: 2022-03-13 13:36:39
  * @LastEditors: 胡晨明
  * @Description: 用户账户及功能侧边栏区域
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\Home\UserAside.vue
@@ -53,7 +53,7 @@ const isHide = computed(() => {
     display: flex;
     flex-flow: column nowrap;
     background: rgba(255, 255, 255, 0.15);
-    border-radius: .02rem;
+    border-radius: .1rem;
     user-select: none;
     position: relative;
     overflow: hidden;
@@ -86,6 +86,7 @@ const isHide = computed(() => {
   /* 设置主界面响应式 */
   .UserAside {
     background: rgb(255, 255, 255);
+    border-radius: 0 .1rem .1rem 0;
   }
 }
 </style>

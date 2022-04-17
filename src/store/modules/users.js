@@ -1,9 +1,17 @@
+/*
+ * @Author: 胡晨明
+ * @Date: 2021-10-22 15:26:55
+ * @LastEditors: 胡晨明
+ * @LastEditTime: 2022-03-13 15:10:39
+ * @Description: file content
+ */
 import storage from '../../utils/storage'
 
 // initial state
 const state = () => ({
   userInfo: storage.getItem('userInfo') || {}, // 获取用户信息
-  userSetting: storage.getItem('userSetting') || {} // 获取用户设置数据
+  userSetting: storage.getItem('userSetting') || {}, // 获取用户设置数据
+  userNotify: storage.getItem('userNotify') || {}   // 获取用户通知数据
 })
 
 // mutations

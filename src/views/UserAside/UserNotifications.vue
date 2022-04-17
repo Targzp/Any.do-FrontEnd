@@ -2,7 +2,7 @@
  * @Author: 胡晨明
  * @Date: 2022-01-29 16:52:10
  * @LastEditors: 胡晨明
- * @LastEditTime: 2022-02-05 12:58:25
+ * @LastEditTime: 2022-03-15 11:31:05
  * @Description: 用户通知栏模态框组件
 -->
 <template>
@@ -229,6 +229,7 @@ import { useRouter, useRoute } from 'vue-router'
 import dayjs from 'dayjs'
 import request from '@/api'
 import storage from '@/utils/storage'
+import debounce from '@/utils/debounce'
 
 const store = useStore()
 
@@ -259,7 +260,7 @@ const taskFlags = {
 //! 用户操作通知信息逻辑区域
 /* ------------------------------- */
 //* 用户拒绝共享清单邀请
-const handleReject = async (notification) => {
+const handleReject = debounce(async (notification) => {
   const userName = storage.getItem('userInfo').userName
 
   try {
@@ -275,10 +276,10 @@ const handleReject = async (notification) => {
   } catch (error) {
     console.log(`${error}`)
   }
-}
+})
 
 //* 用户接受共享清单邀请
-const handleAgree = async (notification) => {
+const handleAgree = debounce(async (notification) => {
   const userName = storage.getItem('userInfo').userName
 
   try {
@@ -298,10 +299,10 @@ const handleAgree = async (notification) => {
   } catch (error) {
     console.log(`${error}`)
   }
-}
+})
 
 //* 查看共享清单下任务修改
-const handleView = async (notification) => {
+const handleView = debounce(async (notification) => {
   let isShare = false
   const delParams = { noticeFlag: notification.noticeFlag, noticeTime: notification.noticeTime }
 
@@ -363,10 +364,10 @@ const handleView = async (notification) => {
   store.commit('delUserNotification', delParams)
 
   emit('cancel')
-}
+})
 
 //* 删除通知信息
-const handleDelNotification = async (noticeFlag, noticeTime) => {
+const handleDelNotification = debounce(async (noticeFlag, noticeTime) => {
   try {
     const params = { noticeFlag, noticeTime }
     await request.deleteNotification(params)
@@ -374,7 +375,7 @@ const handleDelNotification = async (noticeFlag, noticeTime) => {
   } catch (error) {
     console.log(`${error}`)
   }
-}
+})
 /* ------------------------------- */
 </script>
 

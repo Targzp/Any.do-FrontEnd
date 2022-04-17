@@ -2,7 +2,7 @@
  * @Author: 胡晨明
  * @Date: 2022-01-28 14:25:53
  * @LastEditors: 胡晨明
- * @LastEditTime: 2022-02-28 22:14:28
+ * @LastEditTime: 2022-03-15 13:15:44
  * @Description: 清单共享组件
 -->
 <template>
@@ -91,6 +91,7 @@
       >取消</el-button>
       <el-button
         type="primary"
+        :loading="loading"
         class="handleBtn"
         @click="handleInviteUsers"
       >确认</el-button>
@@ -104,6 +105,8 @@ import { useStore } from 'vuex'
 import request from '../../api/index'
 import { ElMessage } from 'element-plus'
 import storage from '@/utils/storage'
+import { useBtnLoading } from '@/utils/useLoading'
+import debounce from '@/utils/debounce'
 
 const store = useStore()
 
@@ -118,6 +121,8 @@ const emit = defineEmits(['handleCancel'])
 /* ------------------------- */
 // 当前所登录用户
 const user = reactive({})
+
+const { loading } = useBtnLoading()
 /* ------------------------- */
 
 //! 用户搜索逻辑区域
@@ -195,7 +200,7 @@ const handleRemoveUndeterMember = (index) => {
 }
 
 //* 移除已邀请成员
-const handleRemoveMember = async (id, index) => {
+const handleRemoveMember = debounce(async (id, index) => {
   try {
     const delParams = { userId: id, listId: props.listId }
     await request.deleteShareUser(delParams)
@@ -207,7 +212,7 @@ const handleRemoveMember = async (id, index) => {
   } catch (error) {
     console.log(`${error}`)
   }
-}
+})
 /* ------------------------- */
 
 //! 用户底部操作逻辑区域
@@ -223,6 +228,7 @@ const handleInviteUsers = async () => {
 
   try {
     if (undeterMembers.value.length > 0) {
+      loading.value = true
       await request.sendInviteNotice(params)
       ElMessage.success('发送邀请成功, 请等待对方回复')
       handleCancel()
@@ -231,6 +237,8 @@ const handleInviteUsers = async () => {
     }
   } catch (error) {
     console.log(`${error}`)
+  } finally {
+    loading.value = false
   }
 }
 /* ------------------------- */

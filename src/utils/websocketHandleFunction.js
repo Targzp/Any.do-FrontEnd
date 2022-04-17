@@ -2,7 +2,7 @@
  * @Author: 胡晨明
  * @Date: 2022-01-23 14:40:11
  * @LastEditors: 胡晨明
- * @LastEditTime: 2022-02-13 16:00:45
+ * @LastEditTime: 2022-03-08 00:09:18
  * @Description: webSocket 消息处理函数
  */
 import store from '@/store'
@@ -13,7 +13,7 @@ export default function handleWebSokcetMessage (res) {
   switch (resD.flag) {
     case 'CONNECT':
       console.log(resD.msg)
-      break;
+      break
     case 'SHARELIST':
     case 'AGREESHARELIST':
     case 'REJECTSHARELIST':
@@ -24,20 +24,20 @@ export default function handleWebSokcetMessage (res) {
     case 'DELETEFILE':
     case 'ASSIGNTASK':
       store.commit('addUserNotification', resD.data)
-      break;
+      break
     case 'DELETETASK':
     case 'REMOVEASSIGNTASK':
       store.commit('addUserNotification', resD.data)
       store.commit('deleteShareUserTask', resD.data)
-      break;
+      break
     case 'REMOVEMEMBER':
       store.commit('addUserNotification', resD.data)
       store.commit('deleteShareUserList', resD.data.listId)
-      break;
+      break
     case 'CHATDATA':
       store.commit('addChatData', resD.data)
-      break;
+      break
     default:
-      break;
+      break
   }
 }

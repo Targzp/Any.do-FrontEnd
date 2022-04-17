@@ -2,7 +2,7 @@
  * @Author: 胡晨明
  * @Date: 2022-02-10 17:48:11
  * @LastEditors: 胡晨明
- * @LastEditTime: 2022-03-02 10:53:21
+ * @LastEditTime: 2022-03-13 13:44:01
  * @Description: 习惯打卡页面组件
 -->
 <template>
@@ -12,7 +12,9 @@
       <span
         class="Habit__header__shrink"
         @click="handleHideAside"
-      ><i class="el-icon-s-fold"></i></span>
+      >
+        <i :class="['el-icon-s-fold', isHide?'el-icon-s-fold--hide':'']"></i>
+      </span>
       <div class="Habit__header__handleBtns">
         <el-button
           plain
@@ -596,7 +598,7 @@ onMounted(async () => {
   display: flex;
   flex-flow: column nowrap;
   background: rgba(255, 255, 255, 0.2);
-  border-radius: .02rem;
+  border-radius: .1rem;
   transition: all .5s ease;
 
   &--spread {
@@ -615,6 +617,14 @@ onMounted(async () => {
       font-size: .23rem;
       cursor: pointer;
       color: $icon-color;
+
+      .el-icon-s-fold {
+        transition: .3s ease;
+
+        &--hide {
+          transform: rotateZ(180deg);
+        }
+      }
     }
 
     &__add {
@@ -898,6 +908,7 @@ onMounted(async () => {
   .Habit {
     &--spread {
       margin-left: 0;
+      border-radius: 0;
     }
   }
 }

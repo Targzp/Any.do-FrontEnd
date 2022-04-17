@@ -1,8 +1,8 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-09-16 16:13:42
- * @LastEditTime: 2021-10-18 15:41:33
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2022-03-19 12:08:00
+ * @LastEditors: 胡晨明
  * @Description: 登录与注册页面组件
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\Login.vue
 -->
@@ -31,10 +31,10 @@ const modelChange = ref(true)
 @import "../../assets/style/variables.scss";
 @media screen and (max-width: 500px) {
     .loginBox {
-        width: 3rem;
+        width: 3.5rem;
     }
     .registerBox {
-        width: 3rem;
+        width: 3.5rem;
     }
 }
 

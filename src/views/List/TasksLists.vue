@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-12-02 14:10:07
- * @LastEditTime: 2022-03-01 17:33:24
+ * @LastEditTime: 2022-03-14 20:52:10
  * @LastEditors: 胡晨明
  * @Description: 任务列表组件
  * @FilePath: \Anydo-app\src\views\List\TasksLists.vue
@@ -31,12 +31,23 @@
                 @mouseenter="enterTaskId = element.id"
                 @mouseleave="enterTaskId = -1"
               >
+                <!-- 任务优先级提示 -->
+                <div
+                  :class="[
+                    (element.task&&element.task.taskPriority)?'prioTip':'',
+                    (element.task&&element.task.taskPriority === 'high')?'prioTip--high':'',
+                    (element.task&&element.task.taskPriority === 'mid')?'prioTip--mid':'',
+                    (element.task&&element.task.taskPriority === 'low')?'prioTip--low':''
+                  ]"
+                ></div>
+                <!-- 完成操作框 -->
                 <el-checkbox
                   v-if="syncListId !== 3"
                   size="medium"
                   class="doneCheck"
                   @change="() => { handleCompleteTask({ id: element.id, listId: element.listId, taskId: element.taskId, taskInfo: element.task && element.task.taskInfo, flag: 'done', value: 1 }) }"
                 />
+                <!-- 删除/还原操作链接 -->
                 <div
                   class="optLink"
                   v-else
@@ -54,15 +65,18 @@
                     @click="() => { handleRevertTask({ id: element.id, listId: element.listId, taskId: element.taskId, flag: 'softDel', value: 0 }) }"
                   >还原</el-link>
                 </div>
+                <!-- 任务名称 -->
                 <span
                   class="taskInfo"
                   @click="() => { handleCheckTaskInfo(element.id, element.listId, element.taskId) }"
                 >{{element.task && element.task.taskInfo}}</span>
+                <!-- 今天/已完成模式下任务清单信息 -->
                 <span
                   v-if="syncListId === 1 || syncListId === 3"
                   class="listInfo"
                   @click.self="() => { handleGotoList(element.listId) }"
                 >{{handleTaskList(element.listId)}}</span>
+                <!-- 任务时间信息 -->
                 <span
                   v-if="syncListId !== 3"
                   class="timeInfo"
@@ -101,6 +115,15 @@
                     @mouseenter="enterTaskId = element.id"
                     @mouseleave="enterTaskId = -1"
                   >
+                    <!-- 任务优先级提示 -->
+                    <div
+                      :class="[
+                        (element.task&&element.task.taskPriority)?'prioTip':'',
+                        (element.task&&element.task.taskPriority === 'high')?'prioTip--high':'',
+                        (element.task&&element.task.taskPriority === 'mid')?'prioTip--mid':'',
+                        (element.task&&element.task.taskPriority === 'low')?'prioTip--low':''
+                      ]"
+                    ></div>
                     <el-checkbox
                       size="medium"
                       class="doneCheck"
@@ -149,6 +172,15 @@
                     @mouseenter="enterTaskId = element.id"
                     @mouseleave="enterTaskId = -1"
                   >
+                    <!-- 任务优先级提示 -->
+                    <div
+                      :class="[
+                        (element.task&&element.task.taskPriority)?'prioTip':'',
+                        (element.task&&element.task.taskPriority === 'high')?'prioTip--high':'',
+                        (element.task&&element.task.taskPriority === 'mid')?'prioTip--mid':'',
+                        (element.task&&element.task.taskPriority === 'low')?'prioTip--low':''
+                      ]"
+                    ></div>
                     <el-checkbox
                       size="medium"
                       class="doneCheck"
@@ -182,10 +214,12 @@
 import { computed } from 'vue'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
+import _ from 'lodash'
 import draggable from 'vuedraggable'
 import listsColumn from '@/components/listsColumn.vue'
 import dayjs from 'dayjs'
 import storage from '@/utils/storage'
+import tasksSort from '@/utils/tasksSort'
 import request from '../../api/index'
 import { ElMessageBox } from 'element-plus'
 
@@ -260,7 +294,13 @@ watch(() => userLists, (val) => {
 })
 
 // 当前清单任务列表
-const userTasks = store.state.tasks.userTasks
+// const userTasks = store.state.tasks.userTasks
+const userTasks = computed(() => {
+  const tasks = _.cloneDeep(store.state.tasks.userTasks)
+
+  return reactive(tasksSort(tasks))
+})
+// console.log('userTasks: ', userTasks)
 
 // 监听 listId 的变化动态获取对应清单任务集合
 watch(() => props.listId, (val) => {
@@ -330,9 +370,9 @@ const handleCompleteTask = (settingValues) => {
   }
   store.dispatch('setUserTask', settingValues)
   .then(async () => {
-    if (settingValues.value) {
+    if (settingValues.value) { 
       const userName = storage.getItem('userInfo').userName
-      await request.sendTaskNotice({ flag: 'done',  userName, listId: settingValues.listId, taskInfo: settingValues.taskInfo, taskId: settingValues.taskId})
+      await request.sendTaskNotice({ flag: 'done',  userName, listId: settingValues.listId, taskInfo: settingValues.taskInfo, taskId: settingValues.taskId })
     }
   })
 }
@@ -432,6 +472,23 @@ const handleRevertTask = (settingValues) => {
       line-height: .4rem;
       cursor: pointer;
       transition: .2s ease;
+
+      .prioTip {
+        width: .01rem;
+        height: .15rem;
+
+        &--high {
+          background-color: rgb(242,85,85);
+        }
+
+        &--mid {
+          background-color: rgb(255,187,68);
+        }
+
+        &--low {
+          background-color: rgb(8,136,255);
+        }
+      }
 
       .doneCheck, .optLink {
         margin: 0 .06rem 0 .08rem;

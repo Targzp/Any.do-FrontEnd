@@ -13,7 +13,7 @@
           @click="$emit('update:showList', !showList)"
         >
             <div class="listsColumn__left">
-                <span :class="['iconfont', 'listsColumn__left__show',{'listsColumn__left__show--bottom': showList}]">&#xe6ae;</span>
+                <span :class="['iconfont', 'listsColumn__left__show', {'listsColumn__left__show--bottom': showList}]">&#xe6ae;</span>
                 <span class="listsColumn__left__tip">{{title}}</span>
             </div>
             <slot name="addition"></slot>

@@ -2,7 +2,7 @@
  * @Author: 胡晨明
  * @Date: 2022-02-05 15:55:43
  * @LastEditors: 胡晨明
- * @LastEditTime: 2022-02-27 00:33:11
+ * @LastEditTime: 2022-03-13 13:44:19
  * @Description: 日历页面组件
 -->
 <template>
@@ -17,7 +17,9 @@
         <span
           :class="['Container__canlendar__shrink', isHide?'Container__canlendar__shrink--hide': '']"
           @click="handleHideAside"
-        ><i class="el-icon-s-fold"></i></span>
+        >
+          <i :class="['el-icon-s-fold', isHide?'el-icon-s-fold--hide':'']"></i>
+        </span>
         <span>{{ date }}</span>
       </span>
       <el-button-group>
@@ -35,7 +37,9 @@
           <p
             class="taskInfo"
             @click="() => { handleViewTasks(data.day) }"
-          >{{handleShowTaskInfo(data.day)}}</p>
+          >
+            {{handleShowTaskInfo(data.day)}}
+          </p>
         </p>
       </template>
     </el-calendar>
@@ -319,7 +323,7 @@ const handleCreateTask = async () => {
   height: 100%;
   font-size: .16rem;
   background: rgba(255, 255, 255, 0.2);
-  border-radius: .02rem;
+  border-radius: .1rem;
   transition: all .5s ease;
 
   &--spread {
@@ -327,6 +331,7 @@ const handleCreateTask = async () => {
   }
 
   &__canlendar {
+    border-radius: .1rem;
     &__header {
       display: flex;
       align-items: center;
@@ -338,6 +343,14 @@ const handleCreateTask = async () => {
       color: $icon-color;
       font-size: .23rem;
       position: relative;
+
+      .el-icon-s-fold {
+        transition: .3s ease;
+
+        &--hide {
+          transform: rotateZ(180deg);
+        }
+      }
 
       &--hide {
         z-index: 999;
@@ -524,6 +537,7 @@ const handleCreateTask = async () => {
   .Container {
     &--spread {
       margin-left: 0;
+      border-radius: 0;
     }
   }
 }

@@ -26,7 +26,7 @@
     "v-calendar": "^3.0.0-alpha.6",
     "vue": "^3.2.6",
     "vue-picture-cropper": "^0.5.1",
-    "vue-router": "^4.0.11",
+    "vue-router": "^4.0.13",
     "vue3-puzzle-vcode": "^1.0.0",
     "vuedraggable": "^4.1.0",
     "vuemoji-picker": "0.0.7",

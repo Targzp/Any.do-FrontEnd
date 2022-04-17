@@ -1,8 +1,8 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-09-15 23:47:39
- * @LastEditTime: 2021-09-21 16:37:46
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2022-03-15 13:45:59
+ * @LastEditors: 胡晨明
  * @Description: 404界面组件
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\404.vue
 -->
@@ -21,19 +21,19 @@
 
 <script setup>
 import { useRouter } from 'vue-router'
-import { NResult, NButton } from "naive-ui";
+import { NResult, NButton } from "naive-ui"
 const router = useRouter()
 // 返回
 const handleGoHome = () =>  {
-    router.go(-2);
+  router.push('/')
 }
 </script>
 
 <style lang="scss">
 .exception {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100vh;
+  padding-top: 2rem;
+  background-color: #fff;
 }
 </style>

@@ -1,7 +1,7 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-10-30 15:38:26
- * @LastEditTime: 2022-02-17 13:46:34
+ * @LastEditTime: 2022-03-13 23:16:46
  * @LastEditors: 胡晨明
  * @Description: 用户附加功能区域组件
  * @FilePath: \Node.js_storee:\毕设项目\Anydo-app\src\views\UserAside\UserAddition.vue
@@ -139,6 +139,7 @@ import config from '../../config/index'
 import request from '../../api/index'
 import Socket from '../../utils/websocket'
 import { clearNotifyFlags } from '@/utils/tasksNotify'
+import { clearDailyNotifyFlags } from '@/utils/dailyNotify'
 import UserNotifications from './UserNotifications.vue'
 import UserSearch from './UserSearch.vue'
 import UserAchievement from './UserAchievement.vue'
@@ -295,6 +296,7 @@ const handleLoginOut = () => {
     await store.dispatch('clearUserTask')     //* 清空用户任务列表
     Socket.closeWebSocket()   //* 关闭 webSocket 连接
     clearNotifyFlags()        //* 清除任务定时器
+    clearDailyNotifyFlags()   //* 清除每日提醒定时器
     Cookies.removeCookies(['anydo.sid.sig', 'anydo.sid'])        //* 清空用户 cookie 值（也需调后端接口去清除后端 session）
     router.push('/login')
   }).catch(() => {

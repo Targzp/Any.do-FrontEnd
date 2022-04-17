@@ -1,12 +1,13 @@
 /*
  * @Author: 胡晨明
  * @Date: 2021-10-28 15:15:44
- * @LastEditTime: 2022-03-05 23:40:08
+ * @LastEditTime: 2022-03-15 10:20:11
  * @LastEditors: 胡晨明
  * @Description: 用户清单状态管理
  * @FilePath: \Node.js_storee:\毕设项目\Anydo-app\src\store\modules\userLists.js
  */
 import storage from '../../utils/storage'
+import router from '@/router'
 
 // initial state
 const state = () => ({
@@ -75,6 +76,12 @@ const mutations = {
   deleteShareUserList(state, listId) {
     const index = state.userLists.findIndex(item => item.listId === listId)
     state.userLists.splice(index, 1)
+    const currentPath = router.options.history.state.current
+    const curListId = currentPath.split('/')[2]
+    console.log('curListId: ', curListId);
+    if (+curListId > 300000) {
+      router.push('/')
+    }
   },
   /**
    * @description: 更改用户清单名称

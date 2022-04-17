@@ -1,7 +1,7 @@
 /*
  * @Author: 胡晨明
  * @Date: 2021-12-01 23:09:10
- * @LastEditTime: 2022-03-07 00:07:49
+ * @LastEditTime: 2022-03-13 00:47:40
  * @LastEditors: 胡晨明
  * @Description: 用户任务状态管理
  * @FilePath: \Anydo-app\src\store\modules\tasks.js
@@ -79,6 +79,7 @@ const mutations = {
    * @return {*}  deleteValues
    */
   deleteShareUserTask (state, params) {
+    console.log('删除数据 params: ', params)
     const index = state.userTasks.findIndex(task => task.listId === params.listId && task.taskId === params.taskId)
     if (index > -1) {
       state.userTasks.splice(index, 1)
@@ -210,7 +211,7 @@ const mutations = {
       break
     }
     default:
-      break;
+      break
     }
   }
 }
@@ -383,7 +384,6 @@ const actions = {
       // 缓存指定 listId 清单任务集合
       if (listId > 300000) {
         tasks = await request.getShareTasks({ listId })
-        console.log('tasks: ', tasks)
         // 为共享任务设定定时提醒
         // tasks.forEach(item => {
         //   const taskId = item.id

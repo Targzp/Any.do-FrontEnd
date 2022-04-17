@@ -1,8 +1,8 @@
 <!--
  * @Author: 胡晨明
  * @Date: 2021-09-17 19:50:03
- * @LastEditTime: 2021-12-17 17:50:47
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2022-03-19 12:09:05
+ * @LastEditors: 胡晨明
  * @Description: 注册模块页面组件
  * @FilePath: \study_javascripts(红宝书)e:\毕设项目\Anydo-app\src\views\Login&Register\RegisterBox.vue
 -->
@@ -190,7 +190,7 @@ const {
     padding: .4rem .2rem .03rem .2rem;
     box-sizing: border-box;
     background: rgba(255, 255, 255, .15);
-    border-radius: .02rem;
+    border-radius: .1rem;
     position: relative;
     transition: all 0.5s ease;
     &__modelText{

@@ -2,7 +2,7 @@
  * @Author: 胡晨明
  * @Date: 2022-02-12 19:00:10
  * @LastEditors: 胡晨明
- * @LastEditTime: 2022-02-28 14:03:35
+ * @LastEditTime: 2022-03-13 13:42:03
  * @Description: file content
 -->
 <template>
@@ -14,7 +14,9 @@
         <span
           class="Chat__main__header__shrink"
           @click="handleHideAside"
-        ><i class="el-icon-s-fold"></i></span>
+        >
+          <i :class="['el-icon-s-fold', isHide?'el-icon-s-fold--hide':'']"></i>
+        </span>
         <span class="Chat__main__header__listTip">当前共享清单</span>
         <el-select class="Chat__main__header__shareLists" v-model.number="shareListsInfo">
           <template
@@ -39,7 +41,7 @@
               v-if="chatData.listId === shareListsInfo || chatData.mainListId === shareListsInfo"
               :class="['Chat__main__chatDatas__chatData', chatData.userName === userName?'Chat__main__chatDatas__chatData--right':'']"
             >
-              <div class="chatTitle">
+              <div :class="['chatTitle', chatData.userName === userName?'chatTitle--right':'']">
                 <span>{{chatData.userName}}</span>
                 <span>{{dayjs(chatData.chatTime).format('YYYY-MM-DD HH:mm:ss')}}</span>
               </div>
@@ -215,6 +217,14 @@ const handleSend = async () => {
         font-size: .23rem;
         cursor: pointer;
         color: $icon-color;
+
+        .el-icon-s-fold {
+          transition: .3s ease;
+
+          &--hide {
+            transform: rotateZ(180deg);
+          }
+        }
       }
 
       &__listTip {
@@ -266,11 +276,16 @@ const handleSend = async () => {
             font-size: .12rem;
             color: rgba(240, 240, 240, 0.925);
           }
+
+          &--right {
+            justify-content: flex-end;
+          }
         }
 
         .chatContent {
           margin-top: .05rem;
           width: fit-content;
+          max-width: 2.25rem;
           padding: .1rem;
           font-size: .13rem;
           background: rgba(255, 255, 255, 0.2);
@@ -370,6 +385,7 @@ const handleSend = async () => {
   .Chat {
     &--spread {
       margin-left: 0;
+      border-radius: 0;
     }
   }
 }
